@@ -214,9 +214,151 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
 .prob-a{font-size:12px;color:var(--text2);line-height:1.45;margin-top:3px;}
 .deck-row{padding:12px;border-radius:var(--r2);border:1px solid transparent;cursor:pointer;transition:all .15s;margin-bottom:6px;}
 .deck-row:hover{background:var(--bg3);border-color:var(--border2);}
+.card-edit{margin:8px 0 4px 0;padding:14px;border-radius:var(--r2);background:var(--bg3);border:1px solid var(--border2);}
+.card-edit .label{margin-bottom:4px;}
+.card-edit textarea.input{resize:vertical;font-family:'DM Sans',sans-serif;}
+.card-row{flex-wrap:wrap;}
+.card-row .card-edit{flex-basis:100%;}
 .fsrs-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:20px;background:var(--purplebg);color:var(--purple);border:1px solid var(--purpleb);text-transform:uppercase;}
 .rate-btn:hover{filter:brightness(1.12);}
 @media(max-width:560px){.rate-btn{padding:12px 4px;font-size:11px;}.rate-btn i{font-size:18px;}}
+</style>
+<style>
+/* ── Legibilidad: el gris terciario era casi invisible ── */
+:root{ --text3:#5566a0; --sh:0 1px 2px rgba(0,0,0,.24),0 8px 28px rgba(0,0,0,.42); }
+.light{ --text3:#6f7cab; --sh:0 1px 2px rgba(16,32,84,.05),0 6px 22px rgba(16,32,84,.08); }
+
+/* ── Tipografía y ritmo ── */
+body{ letter-spacing:-0.005em; }
+.page-title{ letter-spacing:-0.9px; }
+.page-sub{ max-width:62ch; }
+.statbox-val{ letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+.scard-val,.fc-q,.deck-name{ letter-spacing:-0.3px; }
+.statbox-label,.label,.fc-eyebrow{ letter-spacing:0.09em; }
+.recall-card .fc-q,.fc-q{ text-wrap:balance; }
+
+/* ── Superficies: menos ruido, jerarquía más clara ── */
+.card{ border-radius:18px; }
+.statbox{ border-radius:14px; padding:16px 18px; }
+.statbox:hover{ border-color:var(--border2); }
+.card-hover:hover,.deck-card:hover{ transform:translateY(-3px); }
+.deck-card{ border-radius:18px; }
+.btn{ letter-spacing:-0.1px; }
+.btn-accent:active,.btn-purple:active{ filter:brightness(.97); }
+.chip{ line-height:1.5; }
+
+/* ── Foco visible (teclado y accesibilidad) ── */
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:6px; }
+.btn:focus-visible,.nav-btn:focus-visible,.qopt:focus-visible,.rate-btn:focus-visible{ outline-offset:3px; }
+::selection{ background:var(--accentb); color:var(--text); }
+
+/* ── Barras de desplazamiento agarrables ── */
+::-webkit-scrollbar{ width:9px; height:9px; }
+::-webkit-scrollbar-thumb{ background:var(--border2); border-radius:5px;
+  border:2px solid transparent; background-clip:padding-box; }
+::-webkit-scrollbar-thumb:hover{ background:var(--text3); background-clip:padding-box; }
+
+/* ── Botones de calificación: más legibles ── */
+.rate-btn{ padding:15px 8px; gap:4px; }
+.rate-btn:active{ transform:scale(.97); }
+.rate-sub{ opacity:.8; font-weight:600; font-variant-numeric:tabular-nums; }
+
+/* ── Opciones de quiz ── */
+.qopt{ line-height:1.55; }
+.qopt:active:not(:disabled){ transform:scale(.995); }
+
+/* ── Tablas de estadísticas ── */
+.prob-q{ text-wrap:pretty; }
+.deck-tab{ padding:8px 14px; }
+
+/* ── Modales ── */
+.modal{ border-radius:22px; }
+.modal-bg{ backdrop-filter:blur(6px); }
+
+/* ══ TABLETA ══════════════════════════════════════════════════ */
+@media(max-width:900px){
+  .main{ padding:22px 18px 72px; }
+  .card-lg{ padding:24px; }
+}
+
+/* ══ MÓVIL ════════════════════════════════════════════════════ */
+@media(max-width:720px){
+  html,body{ overflow-x:hidden; }
+  .header{
+    height:auto; flex-wrap:wrap; padding:9px 14px 0; gap:8px;
+    row-gap:0; align-items:center;
+  }
+  .header > *:not(.nav){ flex-shrink:0; }
+  .logo{ font-size:16px; }
+  .nav{
+    order:3; width:100%; overflow-x:auto; gap:3px;
+    padding:6px 0 7px; margin-top:2px;
+    scrollbar-width:none; -ms-overflow-style:none;
+    border-top:1px solid var(--border);
+  }
+  .nav::-webkit-scrollbar{ display:none; }
+  .nav-btn{ padding:9px 13px; font-size:12.5px; flex-shrink:0; }
+  .nav-sep{ display:none; }
+
+  .main{ padding:18px 14px 64px; }
+  .page-title{ font-size:26px; letter-spacing:-0.7px; }
+  .card,.deck-card{ padding:17px; border-radius:16px; }
+  .card-lg{ padding:20px; }
+  .statbox{ padding:14px; }
+  .statbox-val{ font-size:25px; }
+  .g4{ grid-template-columns:repeat(auto-fill,minmax(132px,1fr)); gap:9px; }
+  .g2{ grid-template-columns:1fr; }
+
+  /* Objetivos táctiles cómodos para el pulgar */
+  .btn{ padding:11px 17px; }
+  .btn-sm{ padding:9px 14px; font-size:12.5px; }
+  .btn-xs{ padding:8px 11px; font-size:11.5px; }
+  .btn-lg,.btn-xl{ padding:15px 22px; font-size:15px; }
+  .qopt{ padding:15px; }
+  .scard{ padding:15px 8px; }
+
+  /* Sesión de estudio */
+  .recall-card{ padding:22px 18px; min-height:130px; }
+  .fc-scene{ height:210px; }
+  .fc-face{ padding:24px; }
+  .fc-q{ font-size:17px; }
+  .rate-btn{ padding:13px 3px; font-size:11px; gap:3px; }
+  .rate-btn i{ font-size:19px; }
+  .rate-sub{ font-size:9.5px; }
+
+  /* Modales a pantalla casi completa */
+  .modal{ padding:22px 18px; border-radius:20px; max-height:92vh; }
+  .modal-bg{ padding:12px; align-items:flex-end; }
+
+  /* Estadísticas */
+  .prob-row{ flex-wrap:wrap; }
+  .prob-row > div:last-child{ text-align:left !important; width:100%; margin-top:5px; }
+  .ach-toast{ left:12px; right:12px; bottom:12px; max-width:none; }
+  .card-row{ gap:8px; }
+}
+
+@media(max-width:400px){
+  .main{ padding:16px 11px 60px; }
+  .page-title{ font-size:23px; }
+  .g4{ grid-template-columns:1fr 1fr; gap:8px; }
+  .rate-btn{ padding:12px 2px; }
+  .rate-btn i{ font-size:17px; }
+}
+
+/* ── Respeta a quien prefiere menos animación ── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
+  .card-hover:hover,.deck-card:hover{ transform:none; }
+}
+
+/* ── Impresión limpia ── */
+@media print{
+  .header,.nav,.ach-toast{ display:none !important; }
+  .card{ box-shadow:none; border:1px solid #ccc; }
+}
 </style>
 <div id="root"><div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#2e3860;font-family:sans-serif;font-size:13px;"><div class="spin spin-lt" style="width:24px;height:24px;"></div>Cargando MedRecall...</div></div>
 <script>
@@ -551,7 +693,10 @@ function useLS(key, def) {
   }, [key, v]);
   return [v, setV];
 }
-const toDate = d => d.toISOString().split('T')[0];
+const toDate = d => {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
 const todayStr = () => toDate(new Date());
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 const shuffle = a => [...a].sort(() => Math.random() - 0.5);
@@ -837,8 +982,55 @@ const parseQuizCSV = text => {
     return card;
   });
 };
+/* Descarga un respaldo completo (mazos + progreso) */
+function downloadBackup() {
+  const data = {
+    v: 2,
+    fecha: new Date().toISOString(),
+    decks: JSON.parse(localStorage.getItem('mr4_decks') || '[]'),
+    stats: JSON.parse(localStorage.getItem('mr4_stats') || '{}')
+  };
+  const blob = new Blob([JSON.stringify(data)], {
+    type: 'application/json'
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `medrecall-respaldo-${toDate(new Date())}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+/* Restaura un respaldo desde un archivo .json */
+function restoreBackup(file, onDone) {
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!d || !Array.isArray(d.decks)) throw new Error('formato');
+      const n = d.decks.reduce((a, x) => a + (x.cards ? x.cards.length : 0), 0);
+      if (!confirm(`Se restaurarán ${d.decks.length} mazos y ${n} tarjetas.\n\nEsto reemplaza tus datos actuales. ¿Continuar?`)) return;
+      localStorage.setItem('mr4_decks', JSON.stringify(d.decks));
+      if (d.stats) localStorage.setItem('mr4_stats', JSON.stringify(d.stats));
+      onDone(true);
+    } catch (e) {
+      onDone(false);
+    }
+  };
+  r.onerror = () => onDone(false);
+  r.readAsText(file);
+}
 function exportDeck(deck) {
-  const csv = 'pregunta,respuesta\n' + deck.cards.map(c => `"${c.q.replace(/"/g, '""')}","${c.a.replace(/"/g, '""')}"`).join('\n');
+  const esc = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+  const isQuiz = deck.cards.some(c => c.opts && c.opts.length === 4);
+  let csv;
+  if (isQuiz) {
+    csv = 'pregunta,opcion_a,opcion_b,opcion_c,opcion_d,respuesta,categoria,explicacion\n' + deck.cards.map(c => {
+      const opts = c.opts && c.opts.length === 4 ? c.opts : [c.a, '', '', ''];
+      const idx = Math.max(0, opts.indexOf(c.a));
+      return [c.q, ...opts, 'abcd'[idx], c.cat || '', c.expl || ''].map(esc).join(',');
+    }).join('\n');
+  } else {
+    csv = 'pregunta,respuesta\n' + deck.cards.map(c => `${esc(c.q)},${esc(c.a)}`).join('\n');
+  }
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = deck.name + '.csv';
@@ -2374,6 +2566,49 @@ function Settings({
     className: 'divider'
   }), h('div', {
     style: {
+      marginBottom: 14
+    }
+  }, h('label', {
+    className: 'label'
+  }, 'Respaldo de tus datos'), h('div', {
+    style: {
+      fontSize: 11,
+      color: 'var(--text3)',
+      marginBottom: 8
+    }
+  }, 'Todo se guarda solo en este navegador. Descarga un respaldo antes de cada examen o para pasar tu progreso a otro dispositivo.'), h('div', {
+    style: {
+      display: 'flex',
+      gap: 7,
+      flexWrap: 'wrap'
+    }
+  }, h('button', {
+    className: 'btn btn-sm btn-ghost',
+    onClick: downloadBackup
+  }, h('i', {
+    className: 'ti ti-download'
+  }), 'Descargar respaldo'), h('label', {
+    className: 'btn btn-sm btn-ghost',
+    style: {
+      cursor: 'pointer'
+    }
+  }, h('i', {
+    className: 'ti ti-upload'
+  }), 'Restaurar respaldo', h('input', {
+    type: 'file',
+    accept: '.json,application/json',
+    style: {
+      display: 'none'
+    },
+    onChange: e => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (f) restoreBackup(f, ok => ok ? location.reload() : alert('No se pudo leer el archivo de respaldo.'));
+    }
+  })))), h('div', {
+    className: 'divider'
+  }), h('div', {
+    style: {
       marginBottom: 6,
       display: 'flex',
       alignItems: 'center',
@@ -3198,6 +3433,7 @@ function RecallCards({
   const taRef = useRef(null);
   const t0 = useRef(Date.now());
   const [queue, setQueue] = useState(cards);
+  const [undoSnap, setUndoSnap] = useState(null);
   const card = queue[idx];
   useEffect(() => {
     if (phase === 'q' && taRef.current) taRef.current.focus();
@@ -3211,6 +3447,7 @@ function RecallCards({
       if (phase === 'a') {
         if (e.key === '1') rate(1);else if (e.key === '2') rate(2);else if (e.key === '3') rate(3);else if (e.key === '4') rate(4);
       }
+      if ((e.key === 'z' || e.key === 'Z') && undoSnap) undo();
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
         setFocusMode(m => !m);
@@ -3220,7 +3457,26 @@ function RecallCards({
     return () => window.removeEventListener('keydown', h);
   }, [phase, idx, answer, focusMode]);
   const reveal = () => setPhase('a');
+  const undo = () => {
+    if (!undoSnap) return;
+    onUpdateDeck({
+      ...deck,
+      cards: deck.cards.map(c => c.id === undoSnap.card.id ? undoSnap.card : c)
+    });
+    setQueue(undoSnap.queue);
+    setRes(undoSnap.res);
+    setIdx(undoSnap.idx);
+    setPhase('a');
+    setUndoSnap(null);
+  };
   const rate = g => {
+    setUndoSnap({
+      idx,
+      queue,
+      res,
+      card: deck.cards.find(c => c.id === card.id),
+      grade: g
+    });
     if (soundOn) SFX.play(g >= 3 ? 'correct' : g === 1 ? 'wrong' : 'flip');
     const xp = g === 4 ? 5 : g === 3 ? 5 : g === 2 ? 3 : 1;
     addStudied(g > 1, xp, {
@@ -3415,7 +3671,13 @@ function RecallCards({
       color: 'var(--text3)',
       fontFamily: "'Syne',sans-serif"
     }
-  }, idx + 1, "/", queue.length), /*#__PURE__*/React.createElement("button", {
+  }, idx + 1, "/", queue.length), undoSnap && h('button', {
+    className: 'btn btn-xs btn-ghost',
+    onClick: undo,
+    title: 'Deshacer la última calificación (Z)'
+  }, h('i', {
+    className: 'ti ti-arrow-back-up'
+  }), 'Deshacer'), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-xs btn-ghost",
     onClick: () => setFocusMode(m => !m),
     title: "Modo foco (Ctrl+F)"
@@ -5217,12 +5479,147 @@ function QuickAddModal({
 }
 
 /* ══ CARD BROWSER MODAL ═════════════════════════════════════════ */
+/* Formulario para editar una tarjeta existente */
+function CardEditor({
+  card,
+  onSave,
+  onCancel
+}) {
+  const [q, setQ] = useState(card.q || ''),
+    [a, setA] = useState(card.a || ''),
+    [cat, setCat] = useState(card.cat || ''),
+    [expl, setExpl] = useState(card.expl || ''),
+    [opts, setOpts] = useState(card.opts && card.opts.length === 4 ? [...card.opts] : null);
+  const setOpt = (i, v) => setOpts(o => o.map((x, j) => j === i ? v : x));
+  const canSave = q.trim() && a.trim() && (!opts || opts.every(o => o.trim()));
+  const save = () => {
+    if (!canSave) return;
+    const next = {
+      ...card,
+      q: q.trim(),
+      a: a.trim(),
+      cat: cat.trim(),
+      expl: expl.trim()
+    };
+    if (opts) {
+      next.opts = opts.map(o => o.trim());
+      if (!next.opts.includes(next.a)) next.opts[0] = next.a;
+    }
+    onSave(next);
+  };
+  return h('div', {
+    className: 'card-edit'
+  }, h('label', {
+    className: 'label'
+  }, 'Pregunta'), h('textarea', {
+    className: 'input',
+    rows: 2,
+    value: q,
+    onChange: e => setQ(e.target.value),
+    autoFocus: true
+  }), h('label', {
+    className: 'label',
+    style: {
+      marginTop: 10
+    }
+  }, 'Respuesta correcta'), h('textarea', {
+    className: 'input',
+    rows: 2,
+    value: a,
+    onChange: e => setA(e.target.value)
+  }), opts && h('div', {
+    style: {
+      marginTop: 10
+    }
+  }, h('label', {
+    className: 'label'
+  }, 'Opciones (la correcta debe coincidir con la respuesta)'), opts.map((o, i) => h('div', {
+    key: i,
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 7,
+      marginBottom: 5
+    }
+  }, h('span', {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: o.trim() === a.trim() && a.trim() ? 'var(--accent)' : 'var(--text3)',
+      width: 14
+    }
+  }, 'abcd'[i], ')'), h('input', {
+    className: 'input',
+    style: {
+      margin: 0
+    },
+    value: o,
+    onChange: e => setOpt(i, e.target.value)
+  }), h('button', {
+    className: 'btn btn-xs btn-ghost',
+    title: 'Marcar como correcta',
+    onClick: () => setA(o)
+  }, h('i', {
+    className: 'ti ti-check'
+  }))))), h('div', {
+    style: {
+      display: 'flex',
+      gap: 10,
+      marginTop: 10
+    }
+  }, h('div', {
+    style: {
+      flex: 1
+    }
+  }, h('label', {
+    className: 'label'
+  }, 'Categoría'), h('input', {
+    className: 'input',
+    value: cat,
+    onChange: e => setCat(e.target.value),
+    placeholder: 'p. ej. Absorción'
+  })), h('div', {
+    style: {
+      flex: 2
+    }
+  }, h('label', {
+    className: 'label'
+  }, 'Explicación'), h('input', {
+    className: 'input',
+    value: expl,
+    onChange: e => setExpl(e.target.value),
+    placeholder: 'Opcional'
+  }))), !canSave && h('div', {
+    style: {
+      fontSize: 11,
+      color: 'var(--orange)',
+      marginTop: 8
+    }
+  }, 'Completa la pregunta, la respuesta y todas las opciones.'), h('div', {
+    style: {
+      display: 'flex',
+      gap: 7,
+      marginTop: 12
+    }
+  }, h('button', {
+    className: 'btn btn-accent btn-sm',
+    onClick: save,
+    disabled: !canSave
+  }, h('i', {
+    className: 'ti ti-device-floppy'
+  }), 'Guardar'), h('button', {
+    className: 'btn btn-ghost btn-sm',
+    onClick: onCancel
+  }, 'Cancelar')));
+}
 function CardBrowserModal({
   deck,
   onClose,
   onDeleteCard,
+  onUpdateCard,
   onUpdateDeckName
 }) {
+  const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState(''),
     [editName, setEditName] = useState(false),
     [nameVal, setNameVal] = useState(deck.name);
@@ -5370,25 +5767,41 @@ function CardBrowserModal({
       flexShrink: 0,
       alignItems: 'center'
     }
-  }, c.reps >= 3 && /*#__PURE__*/React.createElement("span", {
-    title: "Dominada",
+  }, h('span', {
+    title: `${STATE_INFO[cardState(c)].label} · ${(c.seen || 0) > 0 ? Math.round((c.ok || 0) / c.seen * 100) + '% acierto' : 'sin repasos'}`,
     style: {
-      fontSize: 14
+      fontSize: 10,
+      color: STATE_INFO[cardState(c)].color,
+      fontWeight: 700,
+      flexShrink: 0
     }
-  }, "⭐"), isDue(c) && /*#__PURE__*/React.createElement("span", {
+  }, STATE_INFO[cardState(c)].label), isDue(c) && /*#__PURE__*/React.createElement("span", {
     className: "chip chip-orange",
     style: {
       padding: '1px 6px',
       fontSize: 10
     }
-  }, "hoy"), /*#__PURE__*/React.createElement("button", {
+  }, "hoy"), h('button', {
+    className: 'btn btn-xs btn-ghost',
+    title: 'Editar tarjeta',
+    onClick: () => setEditing(e => e === c.id ? null : c.id)
+  }, h('i', {
+    className: 'ti ti-pencil'
+  })), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-xs btn-red",
     onClick: () => {
       if (confirm('¿Eliminar esta tarjeta?')) onDeleteCard(deck.id, c.id);
     }
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-trash"
-  })))))), /*#__PURE__*/React.createElement("div", {
+  }))), editing === c.id && h(CardEditor, {
+    card: c,
+    onCancel: () => setEditing(null),
+    onSave: nc => {
+      onUpdateCard(deck.id, nc);
+      setEditing(null);
+    }
+  })))), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       color: 'var(--text3)',
@@ -5598,6 +6011,16 @@ function App() {
       cards: b.cards.filter(c => c.id !== cardId)
     } : null);
   };
+  const updateCard = (deckId, card) => {
+    setDecks(d => d.map(x => x.id === deckId ? {
+      ...x,
+      cards: x.cards.map(c => c.id === card.id ? card : c)
+    } : x));
+    setBrowsingDeck(b => b && b.id === deckId ? {
+      ...b,
+      cards: b.cards.map(c => c.id === card.id ? card : c)
+    } : b);
+  };
   const addCard = (deckId, card) => {
     setDecks(d => d.map(x => x.id === deckId ? {
       ...x,
@@ -5777,6 +6200,7 @@ function App() {
     deck: browsingDeck,
     onClose: () => setBrowsingDeck(null),
     onDeleteCard: deleteCard,
+    onUpdateCard: updateCard,
     onUpdateDeckName: name => updateDeckName(browsingDeck.id, name)
   }), toasts.slice(0, 1).map(id => /*#__PURE__*/React.createElement(AchievementToast, {
     key: id,
