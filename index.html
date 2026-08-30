@@ -3440,6 +3440,10 @@ function RecallCards({
   }, [phase, idx]);
   useEffect(() => {
     const h = e => {
+      /* Si el foco está en un campo de texto, solo se permiten los atajos con Ctrl/Cmd */
+      const t = e.target,
+        escribiendo = t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.isContentEditable);
+      if (escribiendo && !e.ctrlKey && !e.metaKey) return;
       if (phase === 'q' && (e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         reveal();
@@ -3447,7 +3451,7 @@ function RecallCards({
       if (phase === 'a') {
         if (e.key === '1') rate(1);else if (e.key === '2') rate(2);else if (e.key === '3') rate(3);else if (e.key === '4') rate(4);
       }
-      if ((e.key === 'z' || e.key === 'Z') && undoSnap) undo();
+      if ((e.key === 'z' || e.key === 'Z') && !e.ctrlKey && !e.metaKey && undoSnap) undo();
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
         setFocusMode(m => !m);
@@ -6099,7 +6103,19 @@ function App() {
   /* Active deck for study (look up from decks or use mix deck) */
   const activeDeck = useMemo(() => {
     if (!study) return null;
-    if (study.deck.id === 'mix') return study.deck;
+    if (study.deck.id === 'mix') {
+      /* El mazo mezclado es una copia congelada; se refresca desde los mazos
+         reales para que cada repaso parta del estado actual de la tarjeta */
+      const byId = new Map();
+      decks.forEach(d => d.cards.forEach(c => byId.set(c.id, c)));
+      return {
+        ...study.deck,
+        cards: study.deck.cards.map(c => byId.has(c.id) ? {
+          ...byId.get(c.id),
+          deckName: c.deckName
+        } : c)
+      };
+    }
     return decks.find(d => d.id === study.deck.id) || study.deck;
   }, [study, decks]);
   const soundOn = stats.sound !== false;
