@@ -356,8 +356,130 @@ body{ letter-spacing:-0.005em; }
 
 /* ── Impresión limpia ── */
 @media print{
-  .header,.nav,.ach-toast{ display:none !important; }
+  .header,.nav,.ach-toast,.toast-host,.pomo-wrap{ display:none !important; }
   .card{ box-shadow:none; border:1px solid #ccc; }
+  .pbar{ position:static; box-shadow:none; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POMODORO
+   ══════════════════════════════════════════════════════════════ */
+.pomo-wrap{ position:relative; display:flex; align-items:center; gap:3px; flex-shrink:0; }
+.pomo{ font-variant-numeric:tabular-nums; }
+.pomo.brk{ border-color:var(--blue); color:var(--blue); }
+.pomo-caret{ padding:5px 7px; border-radius:8px; border:none; background:transparent;
+  color:var(--text3); cursor:pointer; font-size:14px; line-height:1; }
+.pomo-caret:hover{ color:var(--text); background:var(--bg3); }
+.pomo-panel{ position:fixed; top:calc(var(--hh,58px) + 9px); right:14px;
+  width:min(286px,calc(100vw - 24px));
+  background:var(--card); border:1px solid var(--border2); border-radius:18px;
+  padding:17px; box-shadow:0 22px 55px rgba(0,0,0,.5); z-index:320; }
+.light .pomo-panel{ box-shadow:0 16px 42px rgba(16,32,84,.15); }
+.pomo-phase{ font-family:'Syne',sans-serif; font-size:10px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.11em; color:var(--text3); }
+.pomo-big{ font-family:'Syne',sans-serif; font-size:44px; font-weight:800; line-height:1.05;
+  letter-spacing:-1.8px; font-variant-numeric:tabular-nums; color:var(--text); }
+.pomo-dots{ display:flex; gap:5px; margin-top:9px; }
+.pomo-dot{ width:9px; height:9px; border-radius:50%; background:var(--bg3); border:1px solid var(--border2); }
+.pomo-dot.on{ background:var(--orange); border-color:var(--orange); }
+.pomo-num{ width:100%; padding:7px 6px; border:1px solid var(--border2); border-radius:8px;
+  background:var(--bg3); color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif;
+  outline:none; text-align:center; font-variant-numeric:tabular-nums; }
+.pomo-num:focus{ border-color:var(--accent); }
+.pomo-numlbl{ font-size:9.5px; font-weight:700; color:var(--text3); text-transform:uppercase;
+  letter-spacing:.07em; margin-bottom:4px; display:block; text-align:center; }
+
+/* ══════════════════════════════════════════════════════════════
+   AVISOS (toasts) Y CONFIRMACIONES
+   ══════════════════════════════════════════════════════════════ */
+.toast-host{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:600;
+  display:flex; flex-direction:column; gap:8px; align-items:center;
+  width:min(440px,calc(100% - 24px)); pointer-events:none; }
+.toast{ pointer-events:auto; width:100%; display:flex; align-items:center; gap:11px;
+  background:var(--card); border:1px solid var(--border2); border-radius:14px;
+  padding:12px 14px; font-size:13px; color:var(--text);
+  box-shadow:0 14px 40px rgba(0,0,0,.5); animation:slideIn .25s ease both; }
+.light .toast{ box-shadow:0 10px 30px rgba(16,32,84,.15); }
+.toast.out{ animation:slideOut .2s ease forwards; }
+.toast .lead{ font-size:19px; flex-shrink:0; line-height:1; }
+.toast.ok .lead{ color:var(--accent); }
+.toast.err .lead{ color:var(--red); }
+.toast.warn .lead{ color:var(--orange); }
+.toast.info .lead{ color:var(--blue); }
+.toast-msg{ flex:1; line-height:1.45; }
+.toast-x{ background:transparent; border:none; color:var(--text3); cursor:pointer;
+  font-size:15px; padding:2px 4px; line-height:1; flex-shrink:0; }
+.toast-x:hover{ color:var(--text); }
+
+/* ══════════════════════════════════════════════════════════════
+   PALETA DE COMANDOS (⌘K)
+   ══════════════════════════════════════════════════════════════ */
+.cmdk-bg{ position:fixed; inset:0; background:rgba(0,0,0,.62); backdrop-filter:blur(7px);
+  z-index:700; display:flex; align-items:flex-start; justify-content:center;
+  padding:11vh 16px 16px; }
+.light .cmdk-bg{ background:rgba(16,32,84,.3); }
+.cmdk{ width:min(570px,100%); background:var(--card); border:1px solid var(--border2);
+  border-radius:19px; box-shadow:0 30px 80px rgba(0,0,0,.6); overflow:hidden;
+  animation:fadeUp .18s ease both; }
+.light .cmdk{ box-shadow:0 24px 60px rgba(16,32,84,.2); }
+.cmdk-input{ width:100%; border:none; border-bottom:1px solid var(--border); background:transparent;
+  padding:17px 19px; font-size:15px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+.cmdk-input::placeholder{ color:var(--text3); }
+.cmdk-list{ max-height:min(52vh,400px); overflow-y:auto; padding:7px; }
+.cmdk-group{ font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--text3); padding:9px 12px 5px; }
+.cmdk-item{ display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:11px;
+  cursor:pointer; font-size:13.5px; color:var(--text2); }
+.cmdk-item i{ font-size:17px; width:20px; text-align:center; flex-shrink:0; }
+.cmdk-item.sel{ background:var(--accentbg); color:var(--text); }
+.cmdk-item.sel i{ color:var(--accent); }
+.cmdk-label{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cmdk-sub{ font-size:10px; color:var(--text3); text-transform:uppercase;
+  letter-spacing:.08em; font-weight:700; flex-shrink:0; }
+.cmdk-empty{ padding:28px; text-align:center; color:var(--text3); font-size:13px; }
+.cmdk-foot{ display:flex; gap:14px; padding:10px 16px; border-top:1px solid var(--border);
+  font-size:10.5px; color:var(--text3); flex-wrap:wrap; }
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL DE ATAJOS
+   ══════════════════════════════════════════════════════════════ */
+.help-row{ display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text2); }
+.help-row:last-child{ border-bottom:none; }
+.help-keys{ display:flex; gap:4px; flex-shrink:0; }
+
+/* ══════════════════════════════════════════════════════════════
+   SESIÓN: progreso siempre visible
+   ══════════════════════════════════════════════════════════════ */
+.pbar{ position:sticky; top:var(--hh,58px); z-index:60;
+  box-shadow:0 0 0 7px var(--bg), 0 8px 8px -7px var(--bg); }
+@media(prefers-reduced-motion:reduce){ .pbar{ position:static; box-shadow:none; } }
+.sess-clock{ font-size:11px; color:var(--text3); font-variant-numeric:tabular-nums; font-weight:600; }
+
+/* ══════════════════════════════════════════════════════════════
+   CABECERA: el pomodoro no se va con el scroll del nav
+   ══════════════════════════════════════════════════════════════ */
+.header-right{ display:flex; align-items:center; gap:3px; flex-shrink:0; }
+@media(max-width:720px){ .header-right{ margin-left:auto; } }
+
+/* ══════════════════════════════════════════════════════════════
+   REANUDAR SESIÓN + ESTADOS VACÍOS
+   ══════════════════════════════════════════════════════════════ */
+.resume-bar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background:var(--purplebg); border:1px solid var(--purpleb); border-radius:15px;
+  padding:13px 16px; margin-bottom:18px; font-size:13px; color:var(--text2); }
+.resume-bar .grow{ flex:1; min-width:170px; line-height:1.45; }
+.empty-actions{ display:flex; gap:9px; justify-content:center; flex-wrap:wrap; }
+
+/* Un poco de aire cuando el teclado móvil se abre sobre los modales */
+@media(max-width:720px){
+  .cmdk-bg{ padding-top:6vh; }
+  .pomo-panel{ right:10px; width:min(286px,calc(100vw - 20px)); }
+  /* En un teléfono no hay teclado físico: el botón de atajos sobra
+     y la cabecera va justa de espacio */
+  .only-desktop{ display:none !important; }
+  /* Los logros se anuncian arriba para no pelearse con los avisos */
+  .ach-toast{ bottom:auto; top:calc(var(--hh,88px) + 10px); }
 }
 </style>
 <div id="root"><div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#2e3860;font-family:sans-serif;font-size:13px;"><div class="spin spin-lt" style="width:24px;height:24px;"></div>Cargando MedRecall...</div></div>
@@ -673,7 +795,8 @@ const {
   useState,
   useEffect,
   useRef,
-  useMemo
+  useMemo,
+  useCallback
 } = React;
 
 /* ══ UTILS ══════════════════════════════════════════════════════ */
@@ -689,17 +812,43 @@ function useLS(key, def) {
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(v));
-    } catch {}
+      if (LS_FULL.has(key)) LS_FULL.delete(key);
+    } catch (e) {
+      /* Antes esto se tragaba el error y perdías progreso sin enterarte */
+      if (!LS_FULL.has(key)) {
+        LS_FULL.add(key);
+        toast('No se pudo guardar: el almacenamiento del navegador está lleno. Descarga un respaldo desde Ajustes y borra mazos viejos.', {
+          type: 'err',
+          ms: 12000
+        });
+      }
+    }
   }, [key, v]);
   return [v, setV];
 }
+const LS_FULL = new Set();
 const toDate = d => {
   const p = n => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 };
 const todayStr = () => toDate(new Date());
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
-const shuffle = a => [...a].sort(() => Math.random() - 0.5);
+/* Fisher-Yates: el sort(()=>Math.random()-0.5) de antes no barajaba uniformemente */
+const shuffle = a => {
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+};
+/* ¿El foco está en un campo de texto? Los atajos globales deben respetarlo */
+const isTyping = e => {
+  const t = e && e.target;
+  return !!(t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.isContentEditable));
+};
+/* Normaliza para buscar sin acentos ni mayúsculas */
+const norm = s => (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 /* ══ FSRS v5 — MOTOR DE REPETICIÓN ESPACIADA ═══════════════════ */
 const h = React.createElement;
 const DAY_MS = 86400000,
@@ -931,37 +1080,62 @@ const cardRetriev = c => {
 /* Compatibilidad con llamadas antiguas */
 const sm2 = (card, q) => fsrsReview(card, q === 0 ? 1 : q === 1 ? 2 : 3, null);
 
-function splitCSV(line) {
-  const r = [];
-  let cur = '',
+/* Lector CSV conforme a RFC 4180.
+   El anterior partía por líneas antes de parsear (rompía campos multilínea)
+   y no entendía las comillas escapadas ("" dentro de un campo entrecomillado). */
+function parseCSVRows(text) {
+  const rows = [];
+  let row = [],
+    cur = '',
     inQ = false;
-  for (const ch of line) {
-    if (ch === '"' && !inQ) {
-      inQ = true;
+  const src = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const pushCell = () => {
+    row.push(cur);
+    cur = '';
+  };
+  const pushRow = () => {
+    pushCell();
+    if (row.some(c => c.trim() !== '')) rows.push(row);
+    row = [];
+  };
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else inQ = false;
+      } else cur += ch;
       continue;
     }
-    if (ch === '"' && inQ) {
-      inQ = false;
-      continue;
-    }
-    if (ch === ',' && !inQ) {
-      r.push(cur);
+    if (ch === '"' && cur.trim() === '') {
       cur = '';
-      continue;
-    }
-    cur += ch;
+      inQ = true;
+    } else if (ch === '"') cur += ch;else if (ch === ',') pushCell();else if (ch === '\n') pushRow();else cur += ch;
   }
-  r.push(cur);
-  return r;
+  if (cur !== '' || row.length) pushRow();
+  return rows;
 }
-const parseFlashCSV = text => text.trim().split(/\r?\n/).filter(l => l.trim()).map(l => splitCSV(l).map(s => s.trim())).filter(c => c.length >= 2 && c[0] && c[1]).map(c => makeCard(c[0], c[1]));
+/* Compatibilidad: partir una sola línea */
+function splitCSV(line) {
+  const r = parseCSVRows(line);
+  return r.length ? r[0] : [''];
+}
+/* ¿Es la fila de encabezado del formato MedRecall? */
+const isHeaderRow = c => {
+  const a = norm(c[0]),
+    b = norm(c[1] || '');
+  return a === 'pregunta' || a === 'question' || a === 'anverso' || a === 'front' || b === 'respuesta' || b === 'opcion_a' || b === 'opcion a';
+};
+const parseFlashCSV = text => parseCSVRows(text).map(c => c.map(x => x.trim())).filter(c => c.length >= 2 && c[0] && c[1] && !isHeaderRow(c)).map(c => makeCard(c[0], c[1]));
 const parseQuizCSV = text => {
   const LETTERS = ['a', 'b', 'c', 'd'];
-  return text.trim().split(/\r?\n/).filter(l => l.trim()).map(l => splitCSV(l).map(s => s.trim())).filter(c => {
+  return parseCSVRows(text).map(r => r.map(x => x.trim())).filter(c => {
     if (c.length < 6 || !c[0] || !c[1] || !c[5]) return false;
     // Saltar fila de encabezado
-    const ans = c[5].toLowerCase().trim();
-    if (c[0].toLowerCase() === 'pregunta') return false;
+    const ans = norm(c[5]);
+    if (isHeaderRow(c)) return false;
     if (ans === 'respuesta' || ans === 'correcta') return false;
     return true;
   }).map(c => {
@@ -1002,12 +1176,24 @@ function downloadBackup() {
 /* Restaura un respaldo desde un archivo .json */
 function restoreBackup(file, onDone) {
   const r = new FileReader();
-  r.onload = () => {
+  r.onload = async () => {
+    let d;
     try {
-      const d = JSON.parse(r.result);
+      d = JSON.parse(r.result);
       if (!d || !Array.isArray(d.decks)) throw new Error('formato');
-      const n = d.decks.reduce((a, x) => a + (x.cards ? x.cards.length : 0), 0);
-      if (!confirm(`Se restaurarán ${d.decks.length} mazos y ${n} tarjetas.\n\nEsto reemplaza tus datos actuales. ¿Continuar?`)) return;
+    } catch (e) {
+      onDone(false);
+      return;
+    }
+    const n = d.decks.reduce((a, x) => a + (x.cards ? x.cards.length : 0), 0);
+    const go = await askConfirm({
+      title: 'Restaurar respaldo',
+      body: `Se restaurarán ${d.decks.length} mazos y ${n} tarjetas.\n\nEsto reemplaza todos tus datos actuales.`,
+      ok: 'Restaurar',
+      danger: true
+    });
+    if (!go) return;
+    try {
       localStorage.setItem('mr4_decks', JSON.stringify(d.decks));
       if (d.stats) localStorage.setItem('mr4_stats', JSON.stringify(d.stats));
       onDone(true);
@@ -1072,11 +1258,20 @@ const PALETTES = [{
 const palFor = name => PALETTES[name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % PALETTES.length];
 
 /* Sound */
+let _actx = null;
+const getCtx = () => {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!_actx) _actx = new AC();
+  if (_actx.state === 'suspended') _actx.resume();
+  return _actx;
+};
 const SFX = {
   play(type) {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)(),
-        o = ctx.createOscillator(),
+      const ctx = getCtx();
+      if (!ctx) return;
+      const o = ctx.createOscillator(),
         g = ctx.createGain();
       o.connect(g);
       g.connect(ctx.destination);
@@ -1108,6 +1303,36 @@ const SFX = {
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
         o.start(t);
         o.stop(t + 0.2);
+      } else if (type === 'bell') {
+        /* Campana suave de fin de pomodoro */
+        [660, 880, 660].forEach((f, i) => {
+          const oo = ctx.createOscillator(),
+            gg = ctx.createGain();
+          oo.connect(gg);
+          gg.connect(ctx.destination);
+          oo.type = 'sine';
+          oo.frequency.value = f;
+          gg.gain.setValueAtTime(0.0001, t + i * 0.22);
+          gg.gain.exponentialRampToValueAtTime(0.16, t + i * 0.22 + 0.03);
+          gg.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.22 + 0.5);
+          oo.start(t + i * 0.22);
+          oo.stop(t + i * 0.22 + 0.55);
+        });
+      } else if (type === 'chime') {
+        /* Fin de descanso: dos notas ascendentes */
+        [520, 780].forEach((f, i) => {
+          const oo = ctx.createOscillator(),
+            gg = ctx.createGain();
+          oo.connect(gg);
+          gg.connect(ctx.destination);
+          oo.type = 'triangle';
+          oo.frequency.value = f;
+          gg.gain.setValueAtTime(0.0001, t + i * 0.16);
+          gg.gain.exponentialRampToValueAtTime(0.13, t + i * 0.16 + 0.02);
+          gg.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.16 + 0.34);
+          oo.start(t + i * 0.16);
+          oo.stop(t + i * 0.16 + 0.38);
+        });
       } else if (type === 'levelup') {
         [440, 550, 660, 880].forEach((f, i) => {
           const oo = ctx.createOscillator(),
@@ -1295,52 +1520,699 @@ function checkAchievements(stats, decks) {
   };
 }
 
-/* ══ POMODORO ═══════════════════════════════════════════════════ */
-function Timer() {
-  const DUR = 25 * 60,
-    [sec, setSec] = useState(DUR),
-    [on, setOn] = useState(false),
-    [done, setDone] = useState(0);
-  useEffect(() => {
-    if (!on) return;
-    const t = setInterval(() => setSec(s => {
-      if (s <= 1) {
-        setOn(false);
-        setDone(n => n + 1);
-        if ('Notification' in window && Notification.permission === 'granted') new Notification('MedRecall 🍅', {
-          body: '¡Pomodoro completo!'
-        });
-        return DUR;
-      }
-      return s - 1;
-    }), 1000);
-    return () => clearInterval(t);
-  }, [on]);
-  const m = String(~~(sec / 60)).padStart(2, '0'),
-    s = String(sec % 60).padStart(2, '0');
-  return /*#__PURE__*/React.createElement("div", {
+/* ══════════════════════════════════════════════════════════════
+   AVISOS Y CONFIRMACIONES
+   Sustituyen a alert()/confirm(), que bloqueaban toda la página.
+   ══════════════════════════════════════════════════════════════ */
+const BUS = {
+  subs: [],
+  sub(f) {
+    this.subs.push(f);
+    return () => {
+      this.subs = this.subs.filter(x => x !== f);
+    };
+  },
+  emit(e) {
+    this.subs.slice().forEach(f => f(e));
+  }
+};
+let _msgId = 0;
+/* toast('Guardado', {type:'ok'|'err'|'warn'|'info', ms, action:{label,fn}}) */
+function toast(msg, opts) {
+  BUS.emit({
+    kind: 'toast',
+    id: ++_msgId,
+    msg,
+    type: 'info',
+    ms: 4200,
+    ...(opts || {})
+  });
+}
+/* await askConfirm({title, body, ok, danger}) → true | false */
+function askConfirm(o) {
+  return new Promise(resolve => BUS.emit({
+    kind: 'confirm',
+    id: ++_msgId,
+    title: '¿Seguro?',
+    ok: 'Confirmar',
+    cancel: 'Cancelar',
+    danger: false,
+    ...(o || {}),
+    resolve
+  }));
+}
+const TOAST_ICON = {
+  ok: 'ti-circle-check',
+  err: 'ti-alert-circle',
+  warn: 'ti-alert-triangle',
+  info: 'ti-info-circle'
+};
+function ToastHost() {
+  const [items, setItems] = useState([]);
+  const [ask, setAsk] = useState(null);
+  const timers = useRef({});
+  const drop = useCallback(id => {
+    setItems(x => x.map(i => i.id === id ? {
+      ...i,
+      out: true
+    } : i));
+    setTimeout(() => setItems(x => x.filter(i => i.id !== id)), 220);
+  }, []);
+  useEffect(() => BUS.sub(e => {
+    if (e.kind === 'confirm') {
+      setAsk(e);
+      return;
+    }
+    setItems(x => [...x.slice(-3), e]);
+    if (e.ms > 0) timers.current[e.id] = setTimeout(() => drop(e.id), e.ms);
+  }), [drop]);
+  useEffect(() => () => Object.values(timers.current).forEach(clearTimeout), []);
+  const answer = v => {
+    if (ask) ask.resolve(v);
+    setAsk(null);
+  };
+  return h(React.Fragment, null, h('div', {
+    className: 'toast-host',
+    role: 'status',
+    'aria-live': 'polite'
+  }, items.map(t => h('div', {
+    key: t.id,
+    className: `toast ${t.type}${t.out ? ' out' : ''}`
+  }, h('i', {
+    className: `ti ${TOAST_ICON[t.type] || TOAST_ICON.info} lead`,
+    'aria-hidden': 'true'
+  }), h('span', {
+    className: 'toast-msg'
+  }, t.msg), t.action && h('button', {
+    className: 'btn btn-xs btn-green',
+    onClick: () => {
+      t.action.fn();
+      drop(t.id);
+    }
+  }, t.action.label), h('button', {
+    className: 'toast-x',
+    onClick: () => drop(t.id),
+    'aria-label': 'Cerrar aviso'
+  }, h('i', {
+    className: 'ti ti-x'
+  }))))), ask && h(ConfirmDialog, {
+    ask,
+    onAnswer: answer
+  }));
+}
+function ConfirmDialog({
+  ask,
+  onAnswer
+}) {
+  const ref = useModal(() => onAnswer(false));
+  return h('div', {
+    className: 'modal-bg',
+    onClick: e => {
+      if (e.target === e.currentTarget) onAnswer(false);
+    }
+  }, h('div', {
+    className: 'modal fade-up',
+    ref,
+    role: 'alertdialog',
+    'aria-modal': 'true',
+    style: {
+      maxWidth: 420
+    }
+  }, h('div', {
+    style: {
+      fontFamily: "'Syne',sans-serif",
+      fontSize: 18,
+      fontWeight: 800,
+      color: 'var(--text)',
+      marginBottom: 8
+    }
+  }, ask.title), ask.body && h('div', {
+    style: {
+      fontSize: 13,
+      color: 'var(--text2)',
+      lineHeight: 1.6,
+      marginBottom: 20,
+      whiteSpace: 'pre-line'
+    }
+  }, ask.body), h('div', {
     style: {
       display: 'flex',
-      alignItems: 'center',
-      gap: 6
+      gap: 9,
+      justifyContent: 'flex-end',
+      flexWrap: 'wrap'
     }
-  }, done > 0 && /*#__PURE__*/React.createElement("span", {
+  }, h('button', {
+    className: 'btn btn-ghost',
+    onClick: () => onAnswer(false)
+  }, ask.cancel), h('button', {
+    className: `btn ${ask.danger ? 'btn-red' : 'btn-accent'}`,
+    onClick: () => onAnswer(true)
+  }, ask.ok))));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ACCESIBILIDAD DE MODALES
+   Cierra con Esc, atrapa el foco dentro y lo devuelve al salir.
+   ══════════════════════════════════════════════════════════════ */
+const FOCUSABLE = 'button:not([disabled]),[href],input:not([disabled]),select,textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function useModal(onClose) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const prev = document.activeElement;
+    const el = ref.current;
+    if (el) {
+      const f = el.querySelector(FOCUSABLE);
+      (f || el).focus({
+        preventScroll: true
+      });
+    }
+    const onKey = e => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !ref.current) return;
+      const items = [...ref.current.querySelectorAll(FOCUSABLE)].filter(n => n.offsetParent !== null);
+      if (!items.length) return;
+      const first = items[0],
+        last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey, true);
+      document.body.style.overflow = prevOverflow;
+      if (prev && prev.focus) prev.focus({
+        preventScroll: true
+      });
+    };
+  }, [onClose]);
+  return ref;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POMODORO
+   Se calcula con marcas de tiempo absolutas, no contando segundos:
+   así no se desfasa cuando el navegador estrangula la pestaña de
+   fondo, y sobrevive a recargas de la página.
+   ══════════════════════════════════════════════════════════════ */
+const POMO_DEF = {
+  focus: 25,
+  short: 5,
+  long: 15,
+  every: 4
+};
+const PHASE_INFO = {
+  focus: {
+    label: 'Enfoque',
+    icon: 'ti-brain',
+    cls: ''
+  },
+  short: {
+    label: 'Descanso corto',
+    icon: 'ti-coffee',
+    cls: ' brk'
+  },
+  long: {
+    label: 'Descanso largo',
+    icon: 'ti-beach',
+    cls: ' brk'
+  }
+};
+const mmss = sec => {
+  const v = Math.max(0, Math.ceil(sec));
+  return String(Math.floor(v / 60)).padStart(2, '0') + ':' + String(v % 60).padStart(2, '0');
+};
+const notify = (title, body) => {
+  try {
+    if ('Notification' in window && Notification.permission === 'granted') new Notification(title, {
+      body,
+      tag: 'medrecall-pomo'
+    });
+  } catch {}
+};
+function Pomodoro({
+  soundOn,
+  onBreakStart
+}) {
+  const [cfg, setCfg] = useLS('mr4_pomocfg', POMO_DEF);
+  const [st, setSt] = useLS('mr4_pomo', {
+    phase: 'focus',
+    running: false,
+    endsAt: null,
+    left: POMO_DEF.focus * 60,
+    done: 0,
+    cycle: 0,
+    day: null
+  });
+  const [open, setOpen] = useState(false);
+  const [, force] = useState(0);
+  const wrapRef = useRef(null);
+  const dur = p => Math.max(1, Math.round(cfg[p] || POMO_DEF[p])) * 60;
+  const left = st.running && st.endsAt ? (st.endsAt - Date.now()) / 1000 : st.left;
+
+  /* Reinicia el contador de tomates al cambiar de día */
+  useEffect(() => {
+    const td = todayStr();
+    if (st.day !== td) setSt(x => ({
+      ...x,
+      day: td,
+      done: 0,
+      cycle: 0
+    }));
+  }, []);
+
+  /* Latido para repintar; no guarda nada en cada tic */
+  useEffect(() => {
+    if (!st.running) return;
+    const t = setInterval(() => force(n => n + 1), 250);
+    return () => clearInterval(t);
+  }, [st.running]);
+
+  /* Cambio de fase al llegar a cero */
+  useEffect(() => {
+    if (!st.running || left > 0) return;
+    setSt(x => {
+      if (x.phase === 'focus') {
+        const done = x.done + 1,
+          cycle = x.cycle + 1;
+        const next = cycle % Math.max(1, cfg.every || 4) === 0 ? 'long' : 'short';
+        return {
+          ...x,
+          phase: next,
+          done,
+          cycle,
+          running: true,
+          endsAt: Date.now() + dur(next) * 1000,
+          left: dur(next)
+        };
+      }
+      return {
+        ...x,
+        phase: 'focus',
+        running: false,
+        endsAt: null,
+        left: dur('focus')
+      };
+    });
+    if (st.phase === 'focus') {
+      if (soundOn) SFX.play('bell');
+      notify('MedRecall 🍅', '¡Pomodoro completo! Toca descansar.');
+      if (onBreakStart) onBreakStart();
+    } else {
+      if (soundOn) SFX.play('chime');
+      notify('MedRecall ☕', 'Descanso terminado. Cuando quieras, seguimos.');
+    }
+  }, [st.running, left <= 0]);
+
+  /* El tiempo restante también en el título de la pestaña */
+  useEffect(() => {
+    const base = 'MedRecall 🧠';
+    if (!st.running) {
+      document.title = base;
+      return;
+    }
+    const upd = () => {
+      const l = st.endsAt ? (st.endsAt - Date.now()) / 1000 : 0;
+      document.title = `${mmss(l)} · ${PHASE_INFO[st.phase].label}`;
+    };
+    upd();
+    const t = setInterval(upd, 1000);
+    return () => {
+      clearInterval(t);
+      document.title = base;
+    };
+  }, [st.running, st.endsAt, st.phase]);
+
+  /* Cerrar el panel al hacer clic fuera */
+  useEffect(() => {
+    if (!open) return;
+    const away = e => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    const esc = e => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('mousedown', away);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [open]);
+  const start = () => {
+    try {
+      if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    } catch {}
+    if (soundOn) getCtx(); /* desbloquea el audio con el gesto del usuario */
+    setSt(x => ({
+      ...x,
+      running: true,
+      endsAt: Date.now() + Math.max(1, x.left) * 1000
+    }));
+  };
+  const pause = () => setSt(x => ({
+    ...x,
+    running: false,
+    left: Math.max(0, (x.endsAt - Date.now()) / 1000),
+    endsAt: null
+  }));
+  const toggle = () => st.running ? pause() : start();
+  const reset = () => setSt(x => ({
+    ...x,
+    running: false,
+    endsAt: null,
+    left: dur(x.phase)
+  }));
+  const skip = () => {
+    const next = st.phase === 'focus' ? (st.cycle + 1) % Math.max(1, cfg.every || 4) === 0 ? 'long' : 'short' : 'focus';
+    setSt(x => ({
+      ...x,
+      phase: next,
+      running: false,
+      endsAt: null,
+      left: dur(next),
+      cycle: x.phase === 'focus' ? x.cycle + 1 : x.cycle
+    }));
+  };
+  const setDur = (k, v) => {
+    const n = Math.min(180, Math.max(1, parseInt(v, 10) || 1));
+    setCfg(c => ({
+      ...c,
+      [k]: n
+    }));
+    if (!st.running && st.phase === k) setSt(x => ({
+      ...x,
+      left: n * 60
+    }));
+  };
+  const info = PHASE_INFO[st.phase];
+  const warn = st.running && st.phase === 'focus' && left <= 300;
+  const inCycle = st.cycle % Math.max(1, cfg.every || 4);
+  return h('div', {
+    className: 'pomo-wrap',
+    ref: wrapRef
+  }, st.done > 0 && h('span', {
     style: {
       fontSize: 11,
       color: 'var(--orange)',
       fontWeight: 700
-    }
-  }, done, "🍅"), /*#__PURE__*/React.createElement("button", {
-    className: `pomo${on ? ' on' : ''}${on && sec < 5 * 60 ? ' warn' : ''}`,
-    onClick: () => {
-      if (!on) setSec(DUR);
-      setOn(r => !r);
-      if ('Notification' in window) Notification.requestPermission();
     },
-    title: "Pomodoro 25 min"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: `ti ${on ? 'ti-player-pause' : 'ti-player-play'}`
-  }), m, ":", s));
+    title: `${st.done} pomodoros hoy`
+  }, st.done, '🍅'), h('button', {
+    className: `pomo${st.running ? ' on' : ''}${info.cls}${warn ? ' warn' : ''}`,
+    onClick: toggle,
+    'aria-label': `${info.label}, ${mmss(left)} restantes. ${st.running ? 'Pausar' : 'Iniciar'}`
+  }, h('i', {
+    className: `ti ${st.running ? 'ti-player-pause' : 'ti-player-play'}`,
+    'aria-hidden': 'true'
+  }), mmss(left)), h('button', {
+    className: 'pomo-caret',
+    onClick: () => setOpen(o => !o),
+    'aria-label': 'Opciones del pomodoro',
+    'aria-expanded': open
+  }, h('i', {
+    className: `ti ${open ? 'ti-chevron-up' : 'ti-chevron-down'}`
+  })), open && h('div', {
+    className: 'pomo-panel'
+  }, h('div', {
+    className: 'pomo-phase'
+  }, h('i', {
+    className: `ti ${info.icon}`,
+    style: {
+      marginRight: 5
+    }
+  }), info.label), h('div', {
+    className: 'pomo-big'
+  }, mmss(left)), h('div', {
+    className: 'pomo-dots',
+    title: `${inCycle} de ${cfg.every || 4} antes del descanso largo`
+  }, Array.from({
+    length: Math.max(1, cfg.every || 4)
+  }).map((_, i) => h('span', {
+    key: i,
+    className: `pomo-dot${i < inCycle ? ' on' : ''}`
+  }))), h('div', {
+    style: {
+      display: 'flex',
+      gap: 7,
+      marginTop: 15
+    }
+  }, h('button', {
+    className: `btn btn-sm ${st.running ? 'btn-ghost' : 'btn-accent'}`,
+    style: {
+      flex: 1,
+      justifyContent: 'center'
+    },
+    onClick: toggle
+  }, h('i', {
+    className: `ti ${st.running ? 'ti-player-pause' : 'ti-player-play'}`
+  }), st.running ? 'Pausar' : 'Iniciar'), h('button', {
+    className: 'btn btn-sm btn-ghost',
+    onClick: reset,
+    title: 'Reiniciar la fase actual',
+    'aria-label': 'Reiniciar'
+  }, h('i', {
+    className: 'ti ti-refresh'
+  })), h('button', {
+    className: 'btn btn-sm btn-ghost',
+    onClick: skip,
+    title: 'Saltar a la siguiente fase',
+    'aria-label': 'Saltar fase'
+  }, h('i', {
+    className: 'ti ti-player-track-next'
+  }))), h('hr', {
+    className: 'divider',
+    style: {
+      margin: '15px 0 12px'
+    }
+  }), h('div', {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      gap: 8
+    }
+  }, [['focus', 'Enfoque'], ['short', 'Corto'], ['long', 'Largo']].map(([k, lbl]) => h('div', {
+    key: k
+  }, h('label', {
+    className: 'pomo-numlbl',
+    htmlFor: `pomo-${k}`
+  }, lbl), h('input', {
+    id: `pomo-${k}`,
+    className: 'pomo-num',
+    type: 'number',
+    min: 1,
+    max: 180,
+    value: cfg[k],
+    onChange: e => setDur(k, e.target.value)
+  })))), h('div', {
+    style: {
+      fontSize: 11,
+      color: 'var(--text3)',
+      marginTop: 11,
+      lineHeight: 1.5
+    }
+  }, 'Minutos por fase. ', h('b', {
+    style: {
+      color: 'var(--orange)'
+    }
+  }, st.done), ' pomodoro', st.done === 1 ? '' : 's', ' hoy.')));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PALETA DE COMANDOS  (⌘K / Ctrl+K)
+   ══════════════════════════════════════════════════════════════ */
+function CommandPalette({
+  onClose,
+  commands
+}) {
+  const [q, setQ] = useState('');
+  const [i, setI] = useState(0);
+  const listRef = useRef(null);
+  const inputRef = useRef(null);
+  const ref = useModal(onClose);
+  const hits = useMemo(() => {
+    const n = norm(q).trim();
+    if (!n) return commands.slice(0, 40);
+    const words = n.split(/\s+/);
+    return commands.filter(c => {
+      const hay = norm(c.label + ' ' + (c.group || '') + ' ' + (c.keywords || ''));
+      return words.every(w => hay.includes(w));
+    }).slice(0, 40);
+  }, [q, commands]);
+  useEffect(() => setI(0), [q]);
+  useEffect(() => {
+    if (inputRef.current) inputRef.current.focus();
+  }, []);
+  useEffect(() => {
+    const el = listRef.current && listRef.current.querySelector('.cmdk-item.sel');
+    if (el && el.scrollIntoView) el.scrollIntoView({
+      block: 'nearest'
+    });
+  }, [i]);
+  const run = c => {
+    onClose();
+    setTimeout(() => c.run(), 0);
+  };
+  const onKey = e => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setI(x => Math.min(hits.length - 1, x + 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setI(x => Math.max(0, x - 1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (hits[i]) run(hits[i]);
+    }
+  };
+  let lastGroup = null;
+  return h('div', {
+    className: 'cmdk-bg',
+    onClick: e => {
+      if (e.target === e.currentTarget) onClose();
+    }
+  }, h('div', {
+    className: 'cmdk',
+    ref,
+    role: 'dialog',
+    'aria-modal': 'true',
+    'aria-label': 'Paleta de comandos'
+  }, h('input', {
+    ref: inputRef,
+    className: 'cmdk-input',
+    value: q,
+    onChange: e => setQ(e.target.value),
+    onKeyDown: onKey,
+    placeholder: 'Buscar mazo, vista o acción…',
+    'aria-label': 'Buscar comando'
+  }), h('div', {
+    className: 'cmdk-list',
+    ref: listRef,
+    role: 'listbox'
+  }, hits.length === 0 ? h('div', {
+    className: 'cmdk-empty'
+  }, 'Sin resultados para “', q, '”') : hits.map((c, n) => {
+    const head = c.group && c.group !== lastGroup ? c.group : null;
+    lastGroup = c.group;
+    return h(React.Fragment, {
+      key: c.id
+    }, head && h('div', {
+      className: 'cmdk-group'
+    }, head), h('div', {
+      className: `cmdk-item${n === i ? ' sel' : ''}`,
+      role: 'option',
+      'aria-selected': n === i,
+      onMouseEnter: () => setI(n),
+      onClick: () => run(c)
+    }, h('i', {
+      className: `ti ${c.icon || 'ti-circle'}`
+    }), h('span', {
+      className: 'cmdk-label'
+    }, c.label), c.hint && h('span', {
+      className: 'cmdk-sub'
+    }, c.hint)));
+  })), h('div', {
+    className: 'cmdk-foot'
+  }, h('span', null, h('span', {
+    className: 'kbd'
+  }, '↑↓'), ' navegar'), h('span', null, h('span', {
+    className: 'kbd'
+  }, '↵'), ' abrir'), h('span', null, h('span', {
+    className: 'kbd'
+  }, 'Esc'), ' cerrar'))));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL DE ATAJOS  (tecla ?)
+   ══════════════════════════════════════════════════════════════ */
+const SHORTCUTS = [['Global', [[['⌘', 'K'], 'Paleta de comandos'], [['?'], 'Esta ventana de atajos'], [['Esc'], 'Cerrar lo que esté abierto']]], ['Recall activo', [[['⌘', '↵'], 'Revelar la respuesta'], [['1'], 'Otra vez — no la recordé'], [['2'], 'Difícil'], [['3'], 'Bien'], [['4'], 'Fácil'], [['Z'], 'Deshacer la última calificación'], [['⌘', 'F'], 'Modo foco']]], ['Flashcards', [[['Espacio'], 'Voltear la tarjeta'], [['→'], 'La recordé'], [['←'], 'No la recordé']]], ['Quiz', [[['1', '–', '4'], 'Elegir opción'], [['↵'], 'Siguiente pregunta']]]];
+function HelpModal({
+  onClose
+}) {
+  const ref = useModal(onClose);
+  return h('div', {
+    className: 'modal-bg',
+    onClick: e => {
+      if (e.target === e.currentTarget) onClose();
+    }
+  }, h('div', {
+    className: 'modal fade-up',
+    ref,
+    role: 'dialog',
+    'aria-modal': 'true',
+    'aria-label': 'Atajos de teclado'
+  }, h('div', {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 6
+    }
+  }, h('div', {
+    style: {
+      fontFamily: "'Syne',sans-serif",
+      fontSize: 19,
+      fontWeight: 800,
+      color: 'var(--text)'
+    }
+  }, 'Atajos de teclado'), h('button', {
+    className: 'btn btn-xs btn-ghost',
+    onClick: onClose,
+    'aria-label': 'Cerrar'
+  }, h('i', {
+    className: 'ti ti-x'
+  }))), h('div', {
+    style: {
+      fontSize: 12.5,
+      color: 'var(--text2)',
+      marginBottom: 16
+    }
+  }, 'En Mac usa ⌘; en Windows y Linux, Ctrl.'), SHORTCUTS.map(([sec, rows]) => h('div', {
+    key: sec,
+    style: {
+      marginBottom: 16
+    }
+  }, h('div', {
+    className: 'section-title',
+    style: {
+      marginBottom: 4
+    }
+  }, sec), rows.map(([keys, desc], n) => h('div', {
+    className: 'help-row',
+    key: n
+  }, h('span', null, desc), h('span', {
+    className: 'help-keys'
+  }, keys.map((k, m) => h('span', {
+    className: 'kbd',
+    key: m
+  }, k)))))))));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RELOJ DE SESIÓN
+   ══════════════════════════════════════════════════════════════ */
+function SessionClock({
+  since
+}) {
+  const [, force] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => force(n => n + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return h('span', {
+    className: 'sess-clock',
+    title: 'Tiempo en esta sesión'
+  }, mmss((Date.now() - since) / 1000));
 }
 
 /* ══ GOAL RING ══════════════════════════════════════════════════ */
@@ -1481,22 +2353,18 @@ function BrainBreak({
     exhale: 'Exhala',
     rest: 'Descansa'
   };
+  /* Los efectos secundarios viven fuera del updater de estado */
   useEffect(() => {
-    const t = setInterval(() => {
-      setSec(s => {
-        if (s <= 1) {
-          setPhase(p => {
-            const next = ORDER[(ORDER.indexOf(p) + 1) % 4];
-            if (next === 'inhale') setCycles(c => c + 1);
-            return next;
-          });
-          return 4;
-        }
-        return s - 1;
-      });
-    }, 1000);
+    const t = setInterval(() => setSec(s => s - 1), 1000);
     return () => clearInterval(t);
   }, []);
+  useEffect(() => {
+    if (sec > 0) return;
+    const next = ORDER[(ORDER.indexOf(phase) + 1) % 4];
+    setPhase(next);
+    if (next === 'inhale') setCycles(c => c + 1);
+    setSec(4);
+  }, [sec, phase]);
   return /*#__PURE__*/React.createElement("div", {
     className: "break-overlay"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1554,17 +2422,47 @@ function Header({
   view,
   onNav,
   onSettings,
+  onHelp,
+  onPalette,
   stats,
   darkMode,
-  onToggleTheme
+  onToggleTheme,
+  soundOn,
+  onBreakStart
 }) {
   const lvl = getLevel(stats.xp || 0);
+  const ref = useRef(null);
+  /* Publica la altura real de la cabecera para que la barra de
+     progreso pegajosa no quede escondida debajo (cambia en móvil) */
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty('--hh', el.offsetHeight + 'px');
+    set();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', set);
+      return () => window.removeEventListener('resize', set);
+    }
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const NAV = [['home', 'ti-home', 'Inicio'], ['recall', 'ti-brain', 'Recall'], ['stats', 'ti-chart-bar', 'Stats'], ['import', 'ti-upload', 'Importar'], ['generate', 'ti-sparkles', 'IA'], ['achievements', 'ti-trophy', 'Logros']];
   return /*#__PURE__*/React.createElement("header", {
-    className: "header"
+    className: "header",
+    ref: ref
   }, /*#__PURE__*/React.createElement("div", {
     className: "logo",
-    onClick: () => onNav('home')
+    onClick: () => onNav('home'),
+    role: "button",
+    tabIndex: 0,
+    onKeyDown: e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onNav('home');
+      }
+    },
+    "aria-label": "Ir al inicio"
   }, /*#__PURE__*/React.createElement("div", {
     className: "logo-mark"
   }, "🧠"), "MedRecall"), /*#__PURE__*/React.createElement("nav", {
@@ -1572,9 +2470,11 @@ function Header({
   }, NAV.map(([v, ic, lb]) => /*#__PURE__*/React.createElement("button", {
     key: v,
     className: `nav-btn${view === v ? ' active' : ''}`,
-    onClick: () => onNav(v)
+    onClick: () => onNav(v),
+    "aria-current": view === v ? 'page' : undefined
   }, /*#__PURE__*/React.createElement("i", {
-    className: `ti ${ic}`
+    className: `ti ${ic}`,
+    "aria-hidden": "true"
   }), lb)), /*#__PURE__*/React.createElement("div", {
     className: "nav-sep"
   }), /*#__PURE__*/React.createElement("div", {
@@ -1586,18 +2486,43 @@ function Header({
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent'
     }
-  }, lvl.name)), /*#__PURE__*/React.createElement(Timer, null), /*#__PURE__*/React.createElement("button", {
-    className: "nav-btn",
+  }, lvl.name))), h('div', {
+    className: 'header-right'
+  }, h(Pomodoro, {
+    soundOn,
+    onBreakStart
+  }), h('button', {
+    className: 'nav-btn',
+    onClick: onPalette,
+    title: 'Buscar y comandos (Ctrl+K)',
+    'aria-label': 'Abrir la paleta de comandos'
+  }, h('i', {
+    className: 'ti ti-search',
+    'aria-hidden': 'true'
+  })), h('button', {
+    className: 'nav-btn',
     onClick: onToggleTheme,
-    title: darkMode ? 'Modo claro' : 'Modo oscuro'
-  }, /*#__PURE__*/React.createElement("i", {
-    className: `ti ${darkMode ? 'ti-sun' : 'ti-moon'}`
-  })), /*#__PURE__*/React.createElement("button", {
-    className: "nav-btn",
+    title: darkMode ? 'Modo claro' : 'Modo oscuro',
+    'aria-label': darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
+  }, h('i', {
+    className: `ti ${darkMode ? 'ti-sun' : 'ti-moon'}`,
+    'aria-hidden': 'true'
+  })), h('button', {
+    className: 'nav-btn only-desktop',
+    onClick: onHelp,
+    title: 'Atajos de teclado (?)',
+    'aria-label': 'Ver atajos de teclado'
+  }, h('i', {
+    className: 'ti ti-keyboard',
+    'aria-hidden': 'true'
+  })), h('button', {
+    className: 'nav-btn',
     onClick: onSettings,
-    title: "Ajustes"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "ti ti-settings"
+    title: 'Ajustes',
+    'aria-label': 'Abrir ajustes'
+  }, h('i', {
+    className: 'ti ti-settings',
+    'aria-hidden': 'true'
   }))));
 }
 
@@ -2064,11 +2989,39 @@ function DeckReport({
 }
 function StatsPage({
   stats,
-  decks
+  decks,
+  onNav
 }) {
   const [sel, setSel] = useState('all');
   const lvl = getLevel(stats.xp || 0);
   const revlog = stats.revlog || [];
+  const emptyView = !decks.length && h('div', {
+    className: 'fade-up'
+  }, h('div', {
+    className: 'page-title'
+  }, 'Estadísticas'), h('div', {
+    className: 'card'
+  }, h('div', {
+    className: 'empty'
+  }, h('i', {
+    className: 'ti ti-chart-bar empty-icon'
+  }), h('div', {
+    className: 'empty-title'
+  }, 'Todavía no hay nada que medir'), h('div', {
+    className: 'empty-sub'
+  }, 'Cuando estudies tu primer mazo verás aquí tu retención real, los lapsos y las tarjetas que más se te resisten.'), h('div', {
+    className: 'empty-actions'
+  }, h('button', {
+    className: 'btn btn-accent btn-lg',
+    onClick: () => onNav && onNav('import')
+  }, h('i', {
+    className: 'ti ti-upload'
+  }), 'Importar CSV'), h('button', {
+    className: 'btn btn-purple btn-lg',
+    onClick: () => onNav && onNav('generate')
+  }, h('i', {
+    className: 'ti ti-sparkles'
+  }), 'Generar IA')))));
   const all = useMemo(() => decks.map(d => ({
     deck: d,
     st: deckStats(d)
@@ -2106,6 +3059,7 @@ function StatsPage({
     };
   });
   const selected = sel === 'all' ? null : decks.find(d => d.id === sel);
+  if (emptyView) return emptyView;
   return h('div', {
     className: 'fade-up'
   }, h('div', {
@@ -2428,13 +3382,18 @@ function Settings({
     [brk, setBrk] = useState(stats.breakEvery || 20),
     [ret, setRet] = useState(Math.round((stats.fsrsRetention || 0.9) * 100)),
     [maxIvl, setMaxIvl] = useState(stats.fsrsMaxIvl || 365);
+  const mref = useModal(onClose);
   return /*#__PURE__*/React.createElement("div", {
     className: "modal-bg",
     onClick: e => {
       if (e.target === e.currentTarget) onClose();
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "modal fade-up"
+    className: "modal fade-up",
+    ref: mref,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Ajustes"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
@@ -2603,7 +3562,9 @@ function Settings({
     onChange: e => {
       const f = e.target.files && e.target.files[0];
       e.target.value = '';
-      if (f) restoreBackup(f, ok => ok ? location.reload() : alert('No se pudo leer el archivo de respaldo.'));
+      if (f) restoreBackup(f, ok => ok ? location.reload() : toast('No se pudo leer el archivo de respaldo.', {
+        type: 'err'
+      }));
     }
   })))), h('div', {
     className: 'divider'
@@ -2674,7 +3635,12 @@ function Settings({
   }, "Zona de peligro"), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-red btn-sm",
     onClick: () => {
-      if (confirm('¿Borrar TODOS los datos? No se puede deshacer.')) onReset();
+      askConfirm({
+        title: '¿Borrar todos los datos?',
+        body: 'Se eliminan mazos, progreso FSRS, XP, racha y logros. Esto no se puede deshacer.\n\nSi tienes dudas, descarga primero un respaldo.',
+        ok: 'Borrar todo',
+        danger: true
+      }).then(ok => ok && onReset());
     }
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-trash"
@@ -3668,13 +4634,18 @@ function RecallCards({
     className: "chip chip-blue"
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-brain"
-  }), "Recall"), /*#__PURE__*/React.createElement("span", {
+  }), "Recall"), h(SessionClock, {
+    since: t0.current
+  }), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12,
       fontWeight: 800,
       color: 'var(--text3)',
       fontFamily: "'Syne',sans-serif"
-    }
+    },
+    role: "status",
+    "aria-live": "polite",
+    "aria-label": `Tarjeta ${idx + 1} de ${queue.length}`
   }, idx + 1, "/", queue.length), undoSnap && h('button', {
     className: 'btn btn-xs btn-ghost',
     onClick: undo,
@@ -4016,8 +4987,11 @@ function Flashcards({
   const [hard, setHard] = useState(0);
   const [momentum, setMomentum] = useState(0);
   const card = cards[idx];
+  const finished = done.length === cards.length;
   useEffect(() => {
-    const h = e => {
+    const onKey = e => {
+      /* No secuestrar el teclado mientras se escribe en un campo */
+      if (isTyping(e) || e.ctrlKey || e.metaKey || e.altKey || finished) return;
       if (e.key === ' ') {
         e.preventDefault();
         if (soundOn) SFX.play('flip');
@@ -4027,11 +5001,15 @@ function Flashcards({
         if (e.key === 'ArrowRight') rate(true);else if (e.key === 'ArrowLeft') rate(false);
       }
     };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [flip, idx, done, soundOn]);
-  if (done.length === cards.length) {
-    confettiBlast();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [flip, idx, done, soundOn, finished]);
+  /* El confeti es un efecto, no algo que se dispara al renderizar:
+     antes se lanzaba en cada re-render de la pantalla final */
+  useEffect(() => {
+    if (finished) confettiBlast();
+  }, [finished]);
+  if (finished) {
     return /*#__PURE__*/React.createElement("div", {
       className: "fade-up"
     }, /*#__PURE__*/React.createElement("button", {
@@ -4280,16 +5258,21 @@ function Quiz({
     [done, setDone] = useState(false);
   const q = useMemo(() => buildQ(cards[qi], deck.cards), [qi]);
   useEffect(() => {
-    const h = e => {
+    const onKey = e => {
+      if (isTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
       if (!sel && ['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
         const i = +e.key - 1;
         if (q.opts[i]) pick(q.opts[i]);
       }
-      if (sel && e.key === 'Enter') next();
+      if (sel && e.key === 'Enter') {
+        e.preventDefault();
+        next();
+      }
     };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [sel, q, qi]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sel, q, qi, score]);
   const pick = opt => {
     if (sel) return;
     setSel(opt);
@@ -4312,7 +5295,9 @@ function Quiz({
     if (qi + 1 >= cards.length) {
       setDone(true);
       confettiBlast();
-      if (score + 1 === cards.length) onPerfect();
+      /* Antes decía score + 1: premiaba un quiz con un fallo y no
+         premiaba el perfecto. score ya incluye la última respuesta. */
+      if (score === cards.length) onPerfect();
       return;
     }
     setQi(i => i + 1);
@@ -4545,17 +5530,16 @@ function SprintMode({
   const card = cards[qi % Math.max(1, cards.length)];
   useEffect(() => {
     if (!started || done) return;
-    const t = setInterval(() => setSec(s => {
-      if (s <= 1) {
-        setDone(true);
-        onSprintDone();
-        confettiBlast();
-        return 0;
-      }
-      return s - 1;
-    }), 1000);
+    const t = setInterval(() => setSec(s => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
   }, [started, done]);
+  /* El fin del sprint se resuelve fuera del updater de estado */
+  useEffect(() => {
+    if (!started || done || sec > 0) return;
+    setDone(true);
+    onSprintDone();
+    confettiBlast();
+  }, [sec, started, done]);
   useEffect(() => {
     if (!started || done) return;
     const h = e => {
@@ -4759,7 +5743,12 @@ function SprintMode({
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-sm btn-ghost",
     onClick: () => {
-      if (confirm('¿Salir del sprint?')) onBack();
+      askConfirm({
+        title: '¿Salir del sprint?',
+        body: 'Se perderá el conteo de esta ronda, pero las tarjetas que ya respondiste quedan registradas.',
+        ok: 'Salir',
+        danger: true
+      }).then(ok => ok && onBack());
     }
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-x"
@@ -5168,8 +6157,10 @@ function Generate({
           'anthropic-dangerous-direct-browser-access': 'true'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
+          model: 'claude-sonnet-4-5',
+          /* Escalado con la cantidad pedida: con 2000 fijos, a partir de
+             ~15 tarjetas la respuesta se cortaba y el JSON.parse fallaba */
+          max_tokens: Math.min(16000, 1200 + count * 320),
           system: sys,
           messages: [{
             role: 'user',
@@ -5178,14 +6169,29 @@ function Generate({
         })
       });
       const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
-      const data = JSON.parse(d.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim());
+      if (d.error) throw new Error(d.error.message || 'La API devolvió un error.');
+      if (d.stop_reason === 'max_tokens') throw new Error('La respuesta se cortó por ser demasiado larga. Pide menos tarjetas de una vez (prueba con 10) y vuelve a intentarlo.');
+      const raw = (d.content || []).map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error('La IA no devolvió JSON válido. Vuelve a intentarlo o baja la cantidad de tarjetas.');
+      }
+      const list = mode === 'flash' ? data.cards : data.questions;
+      if (!Array.isArray(list) || !list.length) throw new Error('La IA no devolvió ninguna tarjeta utilizable.');
       setResult({
         ...data,
         mode
       });
+      toast(`${list.length} tarjetas generadas. Revísalas antes de guardar.`, {
+        type: 'ok'
+      });
     } catch (e) {
-      setErr('Error: ' + e.message);
+      setErr(e.message);
+      toast('No se pudo generar el material.', {
+        type: 'err'
+      });
     }
     setLoading(false);
   };
@@ -5384,15 +6390,23 @@ function QuickAddModal({
   const save = () => {
     if (!q.trim() || !a.trim() || !deckId) return;
     onAdd(deckId, makeCard(q.trim(), a.trim()));
+    toast('Tarjeta añadida.', {
+      type: 'ok'
+    });
     onClose();
   };
+  const mref = useModal(onClose);
   return /*#__PURE__*/React.createElement("div", {
     className: "modal-bg",
     onClick: e => {
       if (e.target === e.currentTarget) onClose();
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "modal fade-up"
+    className: "modal fade-up",
+    ref: mref,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Anadir tarjeta"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
@@ -5632,6 +6646,7 @@ function CardBrowserModal({
     onUpdateDeckName(nameVal.trim() || deck.name);
     setEditName(false);
   };
+  const mref = useModal(onClose);
   return /*#__PURE__*/React.createElement("div", {
     className: "modal-bg",
     onClick: e => {
@@ -5639,6 +6654,10 @@ function CardBrowserModal({
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "modal fade-up",
+    ref: mref,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Tarjetas del mazo",
     style: {
       maxWidth: 640
     }
@@ -5794,7 +6813,18 @@ function CardBrowserModal({
   })), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-xs btn-red",
     onClick: () => {
-      if (confirm('¿Eliminar esta tarjeta?')) onDeleteCard(deck.id, c.id);
+      askConfirm({
+        title: '¿Eliminar esta tarjeta?',
+        body: c.q,
+        ok: 'Eliminar',
+        danger: true
+      }).then(ok => {
+        if (!ok) return;
+        onDeleteCard(deck.id, c.id);
+        toast('Tarjeta eliminada.', {
+          type: 'warn'
+        });
+      });
     }
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-trash"
@@ -5819,6 +6849,7 @@ function CardBrowserModal({
 const INIT_STATS = {
   streak: 0,
   lastDate: null,
+  lastStudyDate: null,
   total: 0,
   correct: 0,
   today: 0,
@@ -5851,6 +6882,11 @@ function App() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [browsingDeck, setBrowsingDeck] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [pomoBreak, setPomoBreak] = useState(false);
+  /* Última sesión abierta, para poder retomarla tras cerrar el navegador */
+  const [lastSession, setLastSession] = useLS('mr4_lastsession', null);
 
   /* Apply theme class */
   useEffect(() => {
@@ -5862,18 +6898,27 @@ function App() {
   }, [darkMode]);
   const toggleTheme = () => setDarkMode(d => !d);
 
-  /* Reset today count on new day */
+  /* Nuevo día: reiniciar el contador diario y revisar la racha.
+     Antes esto marcaba lastDate con solo ABRIR la app y addStudied
+     hacía Math.max(1, streak), así que la racha nunca pasaba de 1
+     y los logros de 3/7/14 días eran inalcanzables. Ahora la fecha
+     de estudio se lleva aparte y la racha sube al primer repaso. */
   useEffect(() => {
     const td = todayStr();
-    if (stats.lastDate !== td) {
-      const yesterday = toDate(new Date(Date.now() - 86400000));
-      setStats(s => ({
+    if (stats.lastDate === td) return;
+    const ayer = toDate(new Date(Date.now() - 86400000));
+    setStats(s => {
+      /* Compatibilidad con datos viejos que solo tenían lastDate */
+      const ultimo = s.lastStudyDate || (s.total > 0 ? s.lastDate : null);
+      const sigue = ultimo === td || ultimo === ayer;
+      return {
         ...s,
         lastDate: td,
-        today: 0,
-        streak: s.lastDate === yesterday ? s.streak : 0
-      }));
-    }
+        lastStudyDate: ultimo,
+        today: ultimo === td ? s.today : 0,
+        streak: sigue ? s.streak || 0 : 0
+      };
+    });
   }, []);
 
   /* Reescalado del XP a la nueva curva (una sola vez) */
@@ -5912,6 +6957,10 @@ function App() {
         ...(s.dailyHistory || {})
       };
       dh[td] = (dh[td] || 0) + 1;
+      /* Primer repaso del día: la racha avanza (o arranca en 1) */
+      const ayer = toDate(new Date(Date.now() - 86400000));
+      const yaEstudioHoy = s.lastStudyDate === td;
+      const streak = yaEstudioHoy ? s.streak || 1 : s.lastStudyDate === ayer ? (s.streak || 0) + 1 : 1;
       const newXP = (s.xp || 0) + xpAmount;
       const oldLvl = getLevel(s.xp || 0).level,
         newLvl = getLevel(newXP).level;
@@ -5932,8 +6981,10 @@ function App() {
         ...s,
         total: (s.total || 0) + 1,
         correct: (s.correct || 0) + (ok ? 1 : 0),
-        today: (s.today || 0) + 1,
-        streak: Math.max(1, s.streak || 0),
+        today: (yaEstudioHoy ? s.today || 0 : 0) + 1,
+        streak,
+        lastStudyDate: td,
+        lastDate: td,
         history: h,
         xp: newXP,
         dailyHistory: dh,
@@ -5982,7 +7033,28 @@ function App() {
     setView('home');
   };
   const deleteDeck = id => {
-    if (confirm('¿Eliminar este mazo?')) setDecks(d => d.filter(x => x.id !== id));
+    const pos = decks.findIndex(x => x.id === id);
+    if (pos < 0) return;
+    const copia = decks[pos];
+    setDecks(d => d.filter(x => x.id !== id));
+    toast(`Mazo “${copia.name}” eliminado.`, {
+      type: 'warn',
+      ms: 8000,
+      action: {
+        label: 'Deshacer',
+        fn: () => {
+          setDecks(d => {
+            if (d.some(x => x.id === copia.id)) return d;
+            const out = [...d];
+            out.splice(Math.min(pos, out.length), 0, copia);
+            return out;
+          });
+          toast('Mazo restaurado.', {
+            type: 'ok'
+          });
+        }
+      }
+    });
   };
   const updateDeck = deck => {
     if (deck.id === 'mix') {
@@ -6059,10 +7131,29 @@ function App() {
       mode
     });
     setView('study');
+    if (deck.id !== 'mix') setLastSession({
+      deckId: deck.id,
+      name: deck.name,
+      mode,
+      t: Date.now()
+    });
   };
   const backHome = () => {
     setStudy(null);
     setView('home');
+    setLastSession(null);
+  };
+  const resumeSession = () => {
+    if (!lastSession) return;
+    const d = decks.find(x => x.id === lastSession.deckId);
+    if (!d) {
+      setLastSession(null);
+      toast('Ese mazo ya no existe.', {
+        type: 'warn'
+      });
+      return;
+    }
+    goStudy(d, lastSession.mode);
   };
 
   /* Start all due */
@@ -6120,6 +7211,113 @@ function App() {
   }, [study, decks]);
   const soundOn = stats.sound !== false;
   const breakEvery = stats.breakEvery || 20;
+
+  /* ⌘K abre la paleta, ? muestra los atajos */
+  useEffect(() => {
+    const onKey = e => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setHelpOpen(false);
+        setCmdOpen(o => !o);
+        return;
+      }
+      if (e.key === '?' && !isTyping(e) && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setCmdOpen(false);
+        setHelpOpen(o => !o);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  /* Comandos que alimentan la paleta ⌘K */
+  const commands = useMemo(() => {
+    const out = [];
+    const nav = [['home', 'ti-home', 'Inicio'], ['recall', 'ti-brain', 'Active Recall'], ['stats', 'ti-chart-bar', 'Estadísticas'], ['import', 'ti-upload', 'Importar CSV'], ['generate', 'ti-sparkles', 'Generar con IA'], ['achievements', 'ti-trophy', 'Logros']];
+    nav.forEach(([v, icon, label]) => out.push({
+      id: 'nav-' + v,
+      group: 'Ir a',
+      icon,
+      label,
+      keywords: v,
+      run: () => navTo(v)
+    }));
+    out.push({
+      id: 'act-settings',
+      group: 'Acciones',
+      icon: 'ti-settings',
+      label: 'Abrir ajustes',
+      keywords: 'configuracion api key meta diaria sonido',
+      run: () => setShowSettings(true)
+    }, {
+      id: 'act-theme',
+      group: 'Acciones',
+      icon: darkMode ? 'ti-sun' : 'ti-moon',
+      label: darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
+      keywords: 'tema claro oscuro',
+      run: toggleTheme
+    }, {
+      id: 'act-help',
+      group: 'Acciones',
+      icon: 'ti-keyboard',
+      label: 'Ver atajos de teclado',
+      keywords: 'ayuda teclas shortcuts',
+      hint: '?',
+      run: () => setHelpOpen(true)
+    }, {
+      id: 'act-backup',
+      group: 'Acciones',
+      icon: 'ti-download',
+      label: 'Descargar respaldo',
+      keywords: 'copia seguridad json export',
+      run: () => {
+        downloadBackup();
+        toast('Respaldo descargado.', {
+          type: 'ok'
+        });
+      }
+    });
+    if (decks.length) {
+      out.push({
+        id: 'act-quickadd',
+        group: 'Acciones',
+        icon: 'ti-plus',
+        label: 'Añadir una tarjeta',
+        keywords: 'nueva crear',
+        run: () => setShowQuickAdd(true)
+      }, {
+        id: 'act-mix',
+        group: 'Acciones',
+        icon: 'ti-shuffle',
+        label: 'Mix: repasar todos los mazos juntos',
+        keywords: 'mezclar aleatorio todo',
+        run: startMix
+      });
+    }
+    const MODES = [['recall', 'Recall', 'ti-brain'], ['flash', 'Flashcards', 'ti-cards'], ['quiz', 'Quiz', 'ti-help-circle'], ['sprint', 'Sprint', 'ti-bolt']];
+    decks.forEach(d => {
+      const due = d.cards.filter(isDue).length;
+      MODES.forEach(([m, lbl, icon]) => out.push({
+        id: `st-${d.id}-${m}`,
+        group: 'Estudiar',
+        icon,
+        label: `${d.name} — ${lbl}`,
+        keywords: 'estudiar repasar ' + m,
+        hint: m === 'recall' && due ? `${due} hoy` : '',
+        run: () => goStudy(d, m)
+      }));
+      out.push({
+        id: 'br-' + d.id,
+        group: 'Mazos',
+        icon: 'ti-list-search',
+        label: `Ver tarjetas de ${d.name}`,
+        keywords: 'explorar editar buscar',
+        run: () => setBrowsingDeck(d)
+      });
+    });
+    return out;
+  }, [decks, darkMode, view]);
   const renderStudy = () => {
     if (!activeDeck) return /*#__PURE__*/React.createElement("div", {
       className: "fade-up"
@@ -6166,12 +7364,42 @@ function App() {
     view: view,
     onNav: navTo,
     onSettings: () => setShowSettings(true),
+    onHelp: () => setHelpOpen(true),
+    onPalette: () => setCmdOpen(true),
     stats: stats,
     darkMode: darkMode,
-    onToggleTheme: toggleTheme
+    onToggleTheme: toggleTheme,
+    soundOn: soundOn,
+    onBreakStart: () => setPomoBreak(true)
   }), /*#__PURE__*/React.createElement("main", {
     className: "main"
-  }, view === 'home' && /*#__PURE__*/React.createElement(Dashboard, {
+  }, view === 'home' && lastSession && decks.some(d => d.id === lastSession.deckId) && h('div', {
+    className: 'resume-bar fade-up'
+  }, h('i', {
+    className: 'ti ti-player-play',
+    style: {
+      fontSize: 19,
+      color: 'var(--purple)'
+    },
+    'aria-hidden': 'true'
+  }), h('div', {
+    className: 'grow'
+  }, 'Dejaste una sesión a medias en ', h('b', {
+    style: {
+      color: 'var(--text)'
+    }
+  }, lastSession.name), '. Lo que ya calificaste quedó guardado.'), h('button', {
+    className: 'btn btn-sm btn-purple',
+    onClick: resumeSession
+  }, h('i', {
+    className: 'ti ti-arrow-right'
+  }), 'Reanudar'), h('button', {
+    className: 'btn btn-sm btn-ghost',
+    onClick: () => setLastSession(null),
+    'aria-label': 'Descartar la sesión pendiente'
+  }, h('i', {
+    className: 'ti ti-x'
+  }))), view === 'home' && /*#__PURE__*/React.createElement(Dashboard, {
     decks: decks,
     stats: stats,
     onGo: goStudy,
@@ -6180,7 +7408,13 @@ function App() {
     onStartAll: startAll,
     onQuickAdd: () => {
       if (!decks.length) {
-        alert('Primero crea un mazo (Importar o Generar IA).');
+        toast('Primero crea un mazo: importa un CSV o genera uno con IA.', {
+          type: 'warn',
+          action: {
+            label: 'Importar',
+            fn: () => navTo('import')
+          }
+        });
         return;
       }
       setShowQuickAdd(true);
@@ -6193,7 +7427,8 @@ function App() {
     onNav: navTo
   }), view === 'stats' && /*#__PURE__*/React.createElement(StatsPage, {
     stats: stats,
-    decks: decks
+    decks: decks,
+    onNav: navTo
   }), view === 'study' && renderStudy(), view === 'import' && /*#__PURE__*/React.createElement(ImportCSV, {
     onDeckCreated: addDeck
   }), view === 'generate' && /*#__PURE__*/React.createElement(Generate, {
@@ -6222,7 +7457,14 @@ function App() {
     key: id,
     achievement: id,
     onDone: () => removeToast(id)
-  })));
+  })), pomoBreak && h(BrainBreak, {
+    onDone: () => setPomoBreak(false)
+  }), cmdOpen && h(CommandPalette, {
+    commands,
+    onClose: () => setCmdOpen(false)
+  }), helpOpen && h(HelpModal, {
+    onClose: () => setHelpOpen(false)
+  }), h(ToastHost, null));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 
