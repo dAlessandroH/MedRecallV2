@@ -842,6 +842,69 @@ const shuffle = a => {
   }
   return r;
 };
+/* Huella de una pregunta, para detectar repetidas al importar.
+   Ignora acentos, mayúsculas, signos y espacios de más, de modo que
+   "¿Qué es la vida media?" y "que es la vida media" son la misma. */
+const cardKey = q => (q || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9ñ ]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+/* Compara las tarjetas entrantes contra las que ya están en el mazo.
+   dupMode: 'skip' deja intacta la existente · 'update' reescribe su
+   texto conservando TODO su progreso FSRS (estabilidad, fecha, historial). */
+function mergeCards(existing, incoming, dupMode) {
+  const byKey = new Map();
+  existing.forEach((c, i) => {
+    const k = cardKey(c.q);
+    if (k && !byKey.has(k)) byKey.set(k, i);
+  });
+  const out = [...existing];
+  const vistas = new Set();
+  let added = 0,
+    updated = 0,
+    skipped = 0;
+  incoming.forEach(nc => {
+    const k = cardKey(nc.q);
+    /* Repetida dentro del propio CSV */
+    if (k && vistas.has(k)) {
+      skipped++;
+      return;
+    }
+    if (k) vistas.add(k);
+    const i = k ? byKey.get(k) : undefined;
+    if (i === undefined) {
+      out.push(nc);
+      added++;
+      return;
+    }
+    if (dupMode === 'update') {
+      const old = out[i];
+      /* Solo el contenido; el estado del algoritmo se respeta */
+      out[i] = {
+        ...old,
+        q: nc.q,
+        a: nc.a,
+        opts: nc.opts,
+        cat: nc.cat,
+        expl: nc.expl
+      };
+      updated++;
+    } else skipped++;
+  });
+  return {
+    cards: out,
+    added,
+    updated,
+    skipped
+  };
+}
+/* Resumen para enseñar antes de confirmar */
+function mergePreview(existing, incoming) {
+  const r = mergeCards(existing, incoming, 'skip');
+  return {
+    nuevas: r.added,
+    repetidas: r.skipped
+  };
+}
+
 /* ¿El foco está en un campo de texto? Los atajos globales deben respetarlo */
 const isTyping = e => {
   const t = e && e.target;
@@ -2196,6 +2259,239 @@ function HelpModal({
     className: 'kbd',
     key: m
   }, k)))))))));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DESTINO DE UNA IMPORTACIÓN
+   Permite mandar las tarjetas a un mazo que ya existe en lugar de
+   crear siempre uno nuevo, y avisa cuántas están repetidas.
+   ══════════════════════════════════════════════════════════════ */
+function ImportTarget({
+  decks,
+  target,
+  setTarget,
+  name,
+  setName,
+  dupMode,
+  setDupMode,
+  cards
+}) {
+  const deck = decks.find(d => d.id === target);
+  const stats = deck ? mergePreview(deck.cards || [], cards) : null;
+  return h(React.Fragment, null, h('label', {
+    className: 'label'
+  }, 'Dónde guardar'), h('select', {
+    className: 'input',
+    value: target,
+    onChange: e => setTarget(e.target.value),
+    style: {
+      marginBottom: 14
+    }
+  }, h('option', {
+    value: '__new__'
+  }, '➕ Crear un mazo nuevo'), decks.map(d => h('option', {
+    key: d.id,
+    value: d.id
+  }, d.name, ' (', (d.cards || []).length, ' tarjetas)'))), target === '__new__' ? h('div', {
+    style: {
+      marginBottom: 14
+    }
+  }, h('label', {
+    className: 'label'
+  }, 'Nombre del mazo'), h('input', {
+    className: 'input',
+    type: 'text',
+    placeholder: 'Ej: Fisiología II',
+    value: name,
+    onChange: e => setName(e.target.value)
+  })) : h('div', {
+    style: {
+      marginBottom: 14
+    }
+  }, h('div', {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap',
+      marginBottom: stats && stats.repetidas ? 11 : 0
+    }
+  }, h('span', {
+    className: 'chip chip-green'
+  }, h('i', {
+    className: 'ti ti-plus'
+  }), stats.nuevas, stats.nuevas === 1 ? ' nueva' : ' nuevas'), stats.repetidas > 0 && h('span', {
+    className: 'chip chip-orange'
+  }, h('i', {
+    className: 'ti ti-copy'
+  }), stats.repetidas, ' ya está', stats.repetidas > 1 ? 'n' : '', ' en el mazo')), stats.repetidas > 0 && h('div', null, h('label', {
+    className: 'label'
+  }, 'Qué hacer con las repetidas'), h('div', {
+    style: {
+      display: 'flex',
+      gap: 7,
+      flexWrap: 'wrap'
+    }
+  }, [['skip', 'ti-arrow-right', 'Omitirlas'], ['update', 'ti-refresh', 'Actualizar su texto']].map(([v, ic, lb]) => h('button', {
+    key: v,
+    className: `btn btn-sm ${dupMode === v ? 'btn-accent' : 'btn-ghost'}`,
+    onClick: () => setDupMode(v)
+  }, h('i', {
+    className: `ti ${ic}`
+  }), lb))), h('div', {
+    style: {
+      fontSize: 11,
+      color: 'var(--text3)',
+      marginTop: 7,
+      lineHeight: 1.5
+    }
+  }, dupMode === 'update' ? 'Se reescribe la pregunta y la respuesta, pero la tarjeta conserva su progreso: intervalo, estabilidad e historial.' : 'Las repetidas se dejan exactamente como están.'))));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EDITAR UNA TARJETA SIN SALIR DE LA SESIÓN
+   ══════════════════════════════════════════════════════════════ */
+function EditCardModal({
+  card,
+  onSave,
+  onClose
+}) {
+  const [q, setQ] = useState(card.q || '');
+  const [a, setA] = useState(card.a || '');
+  const [opts, setOpts] = useState(card.opts ? [...card.opts] : null);
+  const [expl, setExpl] = useState(card.expl || '');
+  const ref = useModal(onClose);
+  const isQuiz = !!opts;
+  const save = () => {
+    if (!q.trim() || !a.trim()) {
+      toast('La pregunta y la respuesta no pueden quedar vacías.', {
+        type: 'warn'
+      });
+      return;
+    }
+    if (isQuiz && !opts.map(o => o.trim()).includes(a.trim())) {
+      toast('La respuesta correcta debe coincidir con una de las opciones.', {
+        type: 'warn'
+      });
+      return;
+    }
+    onSave({
+      q: q.trim(),
+      a: a.trim(),
+      opts: isQuiz ? opts.map(o => o.trim()) : undefined,
+      expl: expl.trim() || undefined
+    });
+    onClose();
+  };
+  return h('div', {
+    className: 'modal-bg',
+    onClick: e => {
+      if (e.target === e.currentTarget) onClose();
+    }
+  }, h('div', {
+    className: 'modal fade-up',
+    ref,
+    role: 'dialog',
+    'aria-modal': 'true',
+    'aria-label': 'Editar tarjeta'
+  }, h('div', {
+    style: {
+      fontFamily: "'Syne',sans-serif",
+      fontSize: 18,
+      fontWeight: 800,
+      color: 'var(--text)',
+      marginBottom: 4
+    }
+  }, 'Editar tarjeta'), h('div', {
+    style: {
+      fontSize: 12,
+      color: 'var(--text3)',
+      marginBottom: 16
+    }
+  }, 'Cambias el texto; el progreso del algoritmo se mantiene.'), h('label', {
+    className: 'label'
+  }, 'Pregunta'), h('textarea', {
+    className: 'input',
+    rows: 3,
+    value: q,
+    onChange: e => setQ(e.target.value),
+    style: {
+      marginBottom: 12
+    }
+  }), isQuiz && h('div', {
+    style: {
+      marginBottom: 12
+    }
+  }, h('label', {
+    className: 'label'
+  }, 'Opciones (toca el círculo para marcar la correcta)'), opts.map((o, i) => h('div', {
+    key: i,
+    style: {
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center',
+      marginBottom: 7
+    }
+  }, h('button', {
+    onClick: () => setA(o),
+    title: 'Marcar como correcta',
+    'aria-label': `Marcar opción ${i + 1} como correcta`,
+    style: {
+      width: 22,
+      height: 22,
+      flexShrink: 0,
+      borderRadius: '50%',
+      cursor: 'pointer',
+      border: `2px solid ${a === o && o ? 'var(--accent)' : 'var(--border2)'}`,
+      background: a === o && o ? 'var(--accent)' : 'transparent'
+    }
+  }), h('input', {
+    className: 'input',
+    value: o,
+    onChange: e => {
+      const v = e.target.value;
+      setOpts(x => {
+        const y = [...x];
+        const era = y[i];
+        y[i] = v;
+        if (a === era) setA(v);
+        return y;
+      });
+    }
+  })))), !isQuiz && h(React.Fragment, null, h('label', {
+    className: 'label'
+  }, 'Respuesta'), h('textarea', {
+    className: 'input',
+    rows: 3,
+    value: a,
+    onChange: e => setA(e.target.value),
+    style: {
+      marginBottom: 12
+    }
+  })), h('label', {
+    className: 'label'
+  }, 'Explicación (opcional)'), h('textarea', {
+    className: 'input',
+    rows: 3,
+    value: expl,
+    onChange: e => setExpl(e.target.value),
+    style: {
+      marginBottom: 18
+    }
+  }), h('div', {
+    style: {
+      display: 'flex',
+      gap: 9,
+      justifyContent: 'flex-end'
+    }
+  }, h('button', {
+    className: 'btn btn-ghost',
+    onClick: onClose
+  }, 'Cancelar'), h('button', {
+    className: 'btn btn-accent',
+    onClick: save
+  }, h('i', {
+    className: 'ti ti-check'
+  }), 'Guardar'))));
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -4379,6 +4675,8 @@ function SessionSelector({
 
 /* ══ RECALL CARDS ═══════════════════════════════════════════════ */
 function RecallCards({
+  onEditCard,
+  onDropCard,
   deck,
   cards,
   onBack,
@@ -4399,6 +4697,7 @@ function RecallCards({
   const taRef = useRef(null);
   const t0 = useRef(Date.now());
   const [queue, setQueue] = useState(cards);
+  const [editing, setEditing] = useState(null);
   const [undoSnap, setUndoSnap] = useState(null);
   const card = queue[idx];
   useEffect(() => {
@@ -4652,7 +4951,33 @@ function RecallCards({
     title: 'Deshacer la última calificación (Z)'
   }, h('i', {
     className: 'ti ti-arrow-back-up'
-  }), 'Deshacer'), /*#__PURE__*/React.createElement("button", {
+  }), 'Deshacer'), card && onEditCard && h('button', {
+    className: 'btn btn-xs btn-ghost',
+    onClick: () => setEditing(card),
+    title: 'Corregir esta tarjeta sin salir de la sesión',
+    'aria-label': 'Editar la tarjeta actual'
+  }, h('i', {
+    className: 'ti ti-pencil'
+  })), card && onDropCard && h('button', {
+    className: 'btn btn-xs btn-ghost',
+    onClick: () => askConfirm({
+      title: '¿Eliminar esta tarjeta?',
+      body: card.q,
+      ok: 'Eliminar',
+      danger: true
+    }).then(ok => {
+      if (!ok) return;
+      onDropCard(card.id);
+      setQueue(q => q.filter(c => c.id !== card.id));
+      toast('Tarjeta eliminada del mazo.', {
+        type: 'warn'
+      });
+    }),
+    title: 'Eliminar esta tarjeta del mazo',
+    'aria-label': 'Eliminar la tarjeta actual'
+  }, h('i', {
+    className: 'ti ti-trash'
+  })), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-xs btn-ghost",
     onClick: () => setFocusMode(m => !m),
     title: "Modo foco (Ctrl+F)"
@@ -4922,6 +5247,21 @@ function RecallCards({
   }), h('span', null, r.label), h('span', {
     className: 'rate-sub'
   }, previewIvl(card, r.g, cfg))))))));
+  const modal = editing && h(EditCardModal, {
+    card: editing,
+    onClose: () => setEditing(null),
+    onSave: campos => {
+      onEditCard(editing.id, campos);
+      /* Refleja la corrección de inmediato en la sesión en curso */
+      setQueue(q => q.map(c => c.id === editing.id ? {
+        ...c,
+        ...campos
+      } : c));
+      toast('Tarjeta corregida.', {
+        type: 'ok'
+      });
+    }
+  });
   if (focusMode) return /*#__PURE__*/React.createElement("div", {
     className: "focus-overlay"
   }, /*#__PURE__*/React.createElement("button", {
@@ -4936,10 +5276,10 @@ function RecallCards({
       width: '100%',
       paddingTop: 20
     }
-  }, inner));
+  }, inner), modal);
   return /*#__PURE__*/React.createElement("div", {
     className: "fade-up"
-  }, inner);
+  }, inner, modal);
 }
 
 /* ══ RECALL SESSION WRAPPER ═════════════════════════════════════ */
@@ -4947,6 +5287,8 @@ function RecallSession({
   deck,
   onBack,
   onUpdateDeck,
+  onEditCard,
+  onDropCard,
   addStudied,
   soundOn,
   breakEvery,
@@ -4964,6 +5306,8 @@ function RecallSession({
     cards: cards,
     onBack: onBack,
     onUpdateDeck: onUpdateDeck,
+    onEditCard: onEditCard,
+    onDropCard: onDropCard,
     addStudied: addStudied,
     soundOn: soundOn,
     breakEvery: breakEvery,
@@ -5855,8 +6199,12 @@ function SprintMode({
 }
 /* ══ IMPORT CSV ═════════════════════════════════════════════════ */
 function ImportCSV({
-  onDeckCreated
+  onDeckCreated,
+  onAppend,
+  decks
 }) {
+  const [target, setTarget] = useState('__new__'),
+    [dupMode, setDupMode] = useState('skip');
   const [tab, setTab] = useState('flash'),
     [txt, setTxt] = useState(''),
     [name, setName] = useState(''),
@@ -5897,19 +6245,28 @@ function ImportCSV({
   const tmpl = tab === 'flash' ? TMPL_F : TMPL_Q;
   const save = () => {
     if (!preview || !preview.cards.length) return;
-    const n = name.trim() || 'Mazo importado';
-    onDeckCreated({
-      id: uid(),
-      name: n,
-      pal: palFor(n),
-      type: preview.type,
-      cards: preview.cards
-    });
+    if (target !== '__new__') {
+      onAppend(target, preview.cards, dupMode);
+    } else {
+      const n = name.trim() || 'Mazo importado';
+      onDeckCreated({
+        id: uid(),
+        name: n,
+        pal: palFor(n),
+        type: preview.type,
+        cards: preview.cards
+      });
+    }
     setTxt('');
     setName('');
     setPreview(null);
     setErr('');
   };
+  /* Texto del botón según el destino */
+  const destino = decks.find(d => d.id === target);
+  const resumen = destino ? mergePreview(destino.cards || [], preview ? preview.cards : []) : null;
+  const botonTxt = !destino ? `Crear mazo con ${preview ? preview.cards.length : 0} ${tab === 'flash' ? 'tarjetas' : 'preguntas'}` : dupMode === 'update' && resumen.repetidas > 0 ? `Añadir ${resumen.nuevas} y actualizar ${resumen.repetidas} en ${destino.name}` : `Añadir ${resumen.nuevas} a ${destino.name}`;
+  const botonBloqueado = !!destino && resumen.nuevas === 0 && !(dupMode === 'update' && resumen.repetidas > 0);
   return /*#__PURE__*/React.createElement("div", {
     className: "fade-up"
   }, /*#__PURE__*/React.createElement("div", {
@@ -6066,27 +6423,26 @@ function ImportCSV({
     }
   }, "\"", (preview.cards[0]?.q || '').slice(0, 55), "\"")))), preview && /*#__PURE__*/React.createElement("div", {
     className: "card card-lg"
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "label"
-  }, "Nombre del mazo"), /*#__PURE__*/React.createElement("input", {
-    className: "input",
-    type: "text",
-    placeholder: "Ej: Farmacología — Bloque 2",
-    value: name,
-    onChange: e => setName(e.target.value),
-    style: {
-      resize: 'none'
-    }
-  })), /*#__PURE__*/React.createElement("button", {
+  }, h(ImportTarget, {
+    decks,
+    target,
+    setTarget,
+    name,
+    setName,
+    dupMode,
+    setDupMode,
+    cards: preview.cards
+  }), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-accent btn-full btn-lg",
-    onClick: save
+    onClick: save,
+    disabled: botonBloqueado,
+    style: botonBloqueado ? {
+      opacity: 0.5,
+      cursor: 'not-allowed'
+    } : null
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-plus"
-  }), "Crear mazo con ", preview.cards.length, " ", tab === 'flash' ? 'tarjetas' : 'preguntas'), /*#__PURE__*/React.createElement("div", {
+  }), botonBloqueado ? 'Todas ya están en el mazo' : botonTxt), /*#__PURE__*/React.createElement("div", {
     className: "divider"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -6128,8 +6484,13 @@ function ImportCSV({
 /* ══ GENERATE AI ════════════════════════════════════════════════ */
 function Generate({
   onDeckCreated,
+  onAppend,
+  decks,
   apiKey
 }) {
+  const [target, setTarget] = useState('__new__'),
+    [dupMode, setDupMode] = useState('skip'),
+    [deckName, setDeckName] = useState('');
   const [topic, setTopic] = useState(''),
     [count, setCount] = useState(10),
     [mode, setMode] = useState('flash'),
@@ -6195,22 +6556,29 @@ function Generate({
     }
     setLoading(false);
   };
+  const buildCards = r => r.mode === 'flash' ? r.cards.map(c => makeCard(c.q, c.a)) : (r.questions || []).map(q => ({
+    ...makeCard(q.q, q.correct),
+    opts: q.opts,
+    expl: q.expl
+  }));
   const save = () => {
     if (!result) return;
-    const cards = result.mode === 'flash' ? result.cards.map(c => makeCard(c.q, c.a)) : result.questions?.map(q => ({
-      ...makeCard(q.q, q.correct),
-      opts: q.opts
-    }));
-    const name = result.name || topic;
-    onDeckCreated({
-      id: uid(),
-      name,
-      pal: palFor(name),
-      type: result.mode,
-      cards
-    });
+    const cards = buildCards(result);
+    if (target !== '__new__') {
+      onAppend(target, cards, dupMode);
+    } else {
+      const name = deckName.trim() || result.name || topic;
+      onDeckCreated({
+        id: uid(),
+        name,
+        pal: palFor(name),
+        type: result.mode,
+        cards
+      });
+    }
     setResult(null);
     setTopic('');
+    setDeckName('');
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "fade-up"
@@ -6346,12 +6714,23 @@ function Generate({
       color: 'var(--text3)',
       marginTop: 2
     }
-  }, (result.cards || result.questions)?.length, " elementos")), /*#__PURE__*/React.createElement("button", {
-    className: "btn btn-accent",
+  }, (result.cards || result.questions)?.length, " elementos"))), h('div', {
+    className: 'divider'
+  }), h(ImportTarget, {
+    decks,
+    target,
+    setTarget,
+    name: deckName,
+    setName: setDeckName,
+    dupMode,
+    setDupMode,
+    cards: buildCards(result)
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-accent btn-full btn-lg",
     onClick: save
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-plus"
-  }), "Guardar mazo")), /*#__PURE__*/React.createElement("div", {
+  }), target === '__new__' ? 'Crear mazo' : 'Añadir al mazo'), /*#__PURE__*/React.createElement("div", {
     className: "divider"
   }), (result.mode === 'flash' ? result.cards : result.questions?.map(q => ({
     q: q.q,
@@ -7077,6 +7456,43 @@ function App() {
     }
     setDecks(d => d.map(x => x.id === deck.id ? deck : x));
   };
+  /* Añade tarjetas a un mazo existente, sin duplicar y sin tocar
+     el progreso FSRS de las que ya estaban */
+  const appendToDeck = (deckId, nuevas, dupMode) => {
+    const d = decks.find(x => x.id === deckId);
+    if (!d) return;
+    const r = mergeCards(d.cards || [], nuevas, dupMode);
+    setDecks(ds => ds.map(x => x.id === deckId ? {
+      ...x,
+      cards: r.cards
+    } : x));
+    setStats(st => ({
+      ...st,
+      hadImport: true
+    }));
+    setView('home');
+    const partes = [];
+    if (r.added) partes.push(`${r.added} añadida${r.added > 1 ? 's' : ''}`);
+    if (r.updated) partes.push(`${r.updated} actualizada${r.updated > 1 ? 's' : ''}`);
+    if (r.skipped) partes.push(`${r.skipped} omitida${r.skipped > 1 ? 's' : ''} por repetida${r.skipped > 1 ? 's' : ''}`);
+    toast(`${d.name}: ${partes.join(' · ')}.`, {
+      type: 'ok',
+      ms: 6000
+    });
+  };
+  /* Editar o quitar una tarjeta sin saber en qué mazo vive
+     (necesario en Mix Mode, donde se mezclan los siete) */
+  const editCardById = (cardId, campos) => setDecks(ds => ds.map(d => ({
+    ...d,
+    cards: d.cards.map(c => c.id === cardId ? {
+      ...c,
+      ...campos
+    } : c)
+  })));
+  const dropCardById = cardId => setDecks(ds => ds.map(d => ({
+    ...d,
+    cards: d.cards.filter(c => c.id !== cardId)
+  })));
   const deleteCard = (deckId, cardId) => {
     setDecks(d => d.map(x => x.id === deckId ? {
       ...x,
@@ -7335,6 +7751,8 @@ function App() {
       deck: activeDeck,
       onBack: backHome,
       onUpdateDeck: updateDeck,
+      onEditCard: editCardById,
+      onDropCard: dropCardById,
       addStudied,
       soundOn,
       cfg: fsrsCfg(stats)
@@ -7430,9 +7848,13 @@ function App() {
     decks: decks,
     onNav: navTo
   }), view === 'study' && renderStudy(), view === 'import' && /*#__PURE__*/React.createElement(ImportCSV, {
-    onDeckCreated: addDeck
+    onDeckCreated: addDeck,
+    onAppend: appendToDeck,
+    decks: decks
   }), view === 'generate' && /*#__PURE__*/React.createElement(Generate, {
     onDeckCreated: addDeckAI,
+    onAppend: appendToDeck,
+    decks: decks,
     apiKey: apiKey
   }), view === 'achievements' && /*#__PURE__*/React.createElement(AchievementsPage, {
     stats: stats
