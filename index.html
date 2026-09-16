@@ -2905,7 +2905,7 @@ function deckStats(deck) {
   const rev = cards.filter(c => c.st === 'review');
   const avgD = rev.length ? rev.reduce((a, c) => a + (c.d || 5), 0) / rev.length : 0;
   const avgIvl = rev.length ? rev.reduce((a, c) => a + (c.ivl || 0), 0) / rev.length : 0;
-  const due = cards.filter(isDue).length;
+  const due = cards.filter(repasoVencido).length;
   const studied = cards.filter(c => (c.seen || 0) > 0);
   const problem = studied.map(c => ({
     c,
@@ -4270,7 +4270,7 @@ function Dashboard({
   }), "Repasar ahora"), /*#__PURE__*/React.createElement("div", {
     className: "g2"
   }, decks.filter(d => d.cards.some(isDue)).map(deck => {
-    const due = deck.cards.filter(isDue).length;
+    const due = deck.cards.filter(repasoVencido).length;
     return /*#__PURE__*/React.createElement("div", {
       key: deck.id,
       className: "card card-hover",
@@ -4383,7 +4383,8 @@ function Dashboard({
   }), "Generar IA")))) : /*#__PURE__*/React.createElement("div", {
     className: "g2"
   }, decks.map(deck => {
-    const due = deck.cards.filter(isDue).length,
+    const due = deck.cards.filter(repasoVencido).length,
+      sinEstrenar = deck.cards.filter(esNueva).length,
       mastered = deck.cards.filter(c => c.reps >= 3).length,
       pct = Math.round(mastered / deck.cards.length * 100);
     return /*#__PURE__*/React.createElement("div", {
@@ -4427,7 +4428,7 @@ function Dashboard({
       className: "deck-name"
     }, deck.name), /*#__PURE__*/React.createElement("div", {
       className: "deck-meta"
-    }, deck.cards.length, " tarjetas", due > 0 && /*#__PURE__*/React.createElement("span", {
+    }, deck.cards.length, " tarjetas", sinEstrenar > 0 ? ` · ${sinEstrenar} sin estrenar` : '', due > 0 && /*#__PURE__*/React.createElement("span", {
       className: "due-badge",
       style: {
         marginLeft: 6
@@ -4570,7 +4571,8 @@ function RecallHub({
   }, "2–3× más efectivo"), " que releer. FSRS modela tu curva de olvido y programa cada tarjeta justo antes de que la olvides."))), /*#__PURE__*/React.createElement("div", {
     className: "g2"
   }, decks.map(deck => {
-    const due = deck.cards.filter(isDue).length,
+    const due = deck.cards.filter(repasoVencido).length,
+      sinEstrenar = deck.cards.filter(esNueva).length,
       mastered = deck.cards.filter(c => c.reps >= 3).length,
       pct = Math.round(mastered / deck.cards.length * 100);
     return /*#__PURE__*/React.createElement("div", {
@@ -5494,6 +5496,7 @@ function Flashcards({
   const rate = easy => {
     if (soundOn) SFX.play(easy ? 'correct' : 'wrong');
     addStudied(easy, easy ? 4 : 1, {
+      eraNueva: esNueva(card),
       deckId: deck.id,
       cardId: card.id,
       g: easy ? 3 : 1,
@@ -5702,6 +5705,7 @@ function Quiz({
     const card = cards[qi];
     if (soundOn) SFX.play(ok ? 'correct' : 'wrong');
     addStudied(ok, ok ? 5 : 1, {
+      eraNueva: esNueva(card),
       deckId: deck.id,
       cardId: card.id,
       g: ok ? 3 : 1,
@@ -5982,6 +5986,7 @@ function SprintMode({
   const answer = ok => {
     if (soundOn) SFX.play(ok ? 'correct' : 'wrong');
     addStudied(ok, ok ? 3 : 1, {
+      eraNueva: esNueva(card),
       deckId: deck.id,
       cardId: card ? card.id : null,
       g: 0,
@@ -7167,7 +7172,7 @@ function CardBrowserModal({
       color: 'var(--text3)',
       marginTop: 3
     }
-  }, deck.cards.length, " tarjetas · ", deck.cards.filter(isDue).length, " pendientes · clic en nombre para editar")), /*#__PURE__*/React.createElement("div", {
+  }, deck.cards.length, " tarjetas · ", deck.cards.filter(repasoVencido).length, " por repasar · ", deck.cards.filter(esNueva).length, " sin estrenar · clic en nombre para editar")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: 6,
@@ -7798,7 +7803,7 @@ function App() {
     }
     const MODES = [['recall', 'Recall', 'ti-brain'], ['flash', 'Flashcards', 'ti-cards'], ['quiz', 'Quiz', 'ti-help-circle'], ['sprint', 'Sprint', 'ti-bolt']];
     decks.forEach(d => {
-      const due = d.cards.filter(isDue).length;
+      const due = d.cards.filter(repasoVencido).length;
       MODES.forEach(([m, lbl, icon]) => out.push({
         id: `st-${d.id}-${m}`,
         group: 'Estudiar',
