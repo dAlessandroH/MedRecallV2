@@ -1002,6 +1002,35 @@ const isDue = c => {
   const m = c && c.st ? c : migrateCard(c || {});
   return !m.due || m.due <= Date.now();
 };
+/* Una tarjeta nunca estudiada nace con due:null, así que isDue la da
+   por vencida para siempre. Eso mezcla dos cosas distintas: la deuda
+   real (repasos vencidos) y el trabajo disponible (material nuevo).
+   Estas funciones las separan y aplican el cupo diario de nuevas. */
+const esNueva = c => {
+  const m = c && c.st ? c : migrateCard(c || {});
+  return m.st === 'new';
+};
+const repasoVencido = c => !esNueva(c) && isDue(c);
+const NEW_DEF = 50;
+/* Cuántas nuevas te quedan hoy según tu cupo */
+const cupoRestante = st => {
+  if (!st) return NEW_DEF;
+  const lim = st.newPerDay == null ? NEW_DEF : st.newPerDay;
+  if (lim <= 0) return 0;
+  const usadas = st.newDay === todayStr() ? st.newToday || 0 : 0;
+  return Math.max(0, lim - usadas);
+};
+/* Reparte un conjunto de tarjetas en lo que de verdad toca hoy */
+const loQueTocaHoy = (cards, cupo) => {
+  const repasos = cards.filter(repasoVencido);
+  const nuevas = cards.filter(esNueva);
+  return {
+    repasos,
+    nuevas: nuevas.slice(0, Math.max(0, cupo)),
+    nuevasTotales: nuevas.length,
+    total: repasos.length + Math.min(nuevas.length, Math.max(0, cupo))
+  };
+};
 const cardState = c => {
   const m = c && c.st ? c : migrateCard(c || {});
   if (m.st === 'new') return 'new';
@@ -3673,6 +3702,7 @@ function Settings({
   setStats
 }) {
   const [k, setK] = useState(apiKey),
+    [nuevasDia, setNuevasDia] = useState(stats.newPerDay == null ? NEW_DEF : stats.newPerDay),
     [goal, setGoal] = useState(stats.dailyGoal || 20),
     [sound, setSound] = useState(stats.sound !== false),
     [brk, setBrk] = useState(stats.breakEvery || 20),
@@ -3710,6 +3740,30 @@ function Settings({
   }, /*#__PURE__*/React.createElement("i", {
     className: "ti ti-x"
   }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 14
+    }
+  }, h('label', {
+    className: 'label'
+  }, 'Tarjetas nuevas por día: ', nuevasDia === 0 ? 'ninguna' : nuevasDia), h('input', {
+    type: 'range',
+    min: 0,
+    max: 150,
+    step: 5,
+    value: nuevasDia,
+    onChange: e => setNuevasDia(+e.target.value),
+    style: {
+      width: '100%',
+      accentColor: 'var(--accent)'
+    }
+  }), h('div', {
+    style: {
+      fontSize: 11.5,
+      color: 'var(--text3)',
+      marginTop: 5,
+      lineHeight: 1.55
+    }
+  }, 'Cuántas tarjetas sin estrenar entran al día. Puedes importar cientos de golpe: van saliendo a este ritmo en vez de caerte todas juntas. En 0 solo repasas lo vencido.')), h('div', {
     style: {
       marginBottom: 14
     }
@@ -3956,6 +4010,7 @@ function Settings({
       setStats(s => ({
         ...s,
         dailyGoal: goal,
+        newPerDay: nuevasDia,
         sound,
         breakEvery: brk,
         fsrsRetention: ret / 100,
@@ -3970,6 +4025,7 @@ function Settings({
 
 /* ══ DASHBOARD ══════════════════════════════════════════════════ */
 function Dashboard({
+  cupo = NEW_DEF,
   decks,
   stats,
   onGo,
@@ -3981,7 +4037,9 @@ function Dashboard({
   onMix
 }) {
   const acc = stats.total > 0 ? Math.round(stats.correct / stats.total * 100) : 0;
-  const allDue = useMemo(() => decks.reduce((s, d) => s + d.cards.filter(isDue).length, 0), [decks]);
+  const reparto = useMemo(() => loQueTocaHoy(decks.flatMap(d => d.cards), cupo), [decks, cupo]);
+  const allDue = reparto.total;
+  const enReserva = reparto.nuevasTotales - reparto.nuevas.length;
   const lvl = getLevel(stats.xp || 0);
   const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
     MAPPED = [1, 2, 3, 4, 5, 6, 0],
@@ -4021,7 +4079,7 @@ function Dashboard({
       color: 'var(--text2)',
       marginBottom: 14
     }
-  }, allDue > 0 ? `${allDue} tarjeta${allDue > 1 ? 's' : ''} esperan tu repaso.` : decks.length > 0 ? '¡Al corriente! Sin pendientes.' : 'Importa o genera tu primer mazo.'), /*#__PURE__*/React.createElement("div", {
+  }, allDue > 0 ? [reparto.repasos.length ? `${reparto.repasos.length} repaso${reparto.repasos.length > 1 ? 's' : ''}` : null, reparto.nuevas.length ? `${reparto.nuevas.length} nueva${reparto.nuevas.length > 1 ? 's' : ''}` : null].filter(Boolean).join(' · ') + (enReserva > 0 ? ` · ${enReserva} en reserva` : '') : decks.length > 0 ? '¡Al corriente! Sin pendientes.' : 'Importa o genera tu primer mazo.'), /*#__PURE__*/React.createElement("div", {
     style: {
       maxWidth: 260
     }
@@ -4579,9 +4637,13 @@ function SessionSelector({
   deck,
   onStart,
   onBack,
-  isMix
+  isMix,
+  cupo = NEW_DEF,
+  limiteNuevas = NEW_DEF
 }) {
-  const dueCards = useMemo(() => shuffle(deck.cards.filter(isDue)), [deck.id]);
+  /* Primero los repasos vencidos, luego las nuevas que permita el cupo */
+  const reparto = useMemo(() => loQueTocaHoy(deck.cards, cupo), [deck.id, cupo]);
+  const dueCards = useMemo(() => [...shuffle(reparto.repasos), ...reparto.nuevas], [deck.id, cupo]);
   const pool = dueCards.length > 0 ? dueCards : shuffle(deck.cards);
   const opts = [...new Set([5, 10, 20, pool.length].filter(v => v > 0 && v <= pool.length))].map(n => ({
     n,
@@ -4619,7 +4681,18 @@ function SessionSelector({
       color: 'var(--text2)',
       marginBottom: 24
     }
-  }, dueCards.length > 0 ? `${dueCards.length} tarjeta${dueCards.length > 1 ? 's' : ''} pendiente${dueCards.length > 1 ? 's' : ''} hoy` : 'Sin pendientes — practicarás todas'), /*#__PURE__*/React.createElement("div", {
+  }, dueCards.length > 0 ? [reparto.repasos.length ? `${reparto.repasos.length} repaso${reparto.repasos.length > 1 ? 's' : ''}` : null, reparto.nuevas.length ? `${reparto.nuevas.length} nueva${reparto.nuevas.length > 1 ? 's' : ''}` : null].filter(Boolean).join(' · ') : 'Sin pendientes — practicarás todas'), reparto.nuevasTotales > reparto.nuevas.length && h('div', {
+    style: {
+      fontSize: 11.5,
+      color: 'var(--text3)',
+      marginTop: 5,
+      lineHeight: 1.5
+    }
+  }, 'Quedan ', h('b', {
+    style: {
+      color: 'var(--text2)'
+    }
+  }, reparto.nuevasTotales - reparto.nuevas.length), ' nuevas en reserva. Entran poco a poco, ', limiteNuevas, ' al día, para que la carga no se te dispare.'), /*#__PURE__*/React.createElement("div", {
     className: "card card-lg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "label",
@@ -4752,7 +4825,8 @@ function RecallCards({
       deckId: deck.id,
       cardId: card.id,
       g,
-      mode: 'recall'
+      mode: 'recall',
+      eraNueva: esNueva(card)
     });
     setRes(r => [...r, {
       id: card.id,
@@ -5292,6 +5366,8 @@ function RecallSession({
   addStudied,
   soundOn,
   breakEvery,
+  cupo,
+  limiteNuevas,
   cfg
 }) {
   const [cards, setCards] = useState(null);
@@ -5299,7 +5375,9 @@ function RecallSession({
     deck: deck,
     onStart: setCards,
     onBack: onBack,
-    isMix: deck.id === 'mix'
+    isMix: deck.id === 'mix',
+    cupo: cupo,
+    limiteNuevas: limiteNuevas
   });
   return /*#__PURE__*/React.createElement(RecallCards, {
     deck: deck,
@@ -7226,6 +7304,9 @@ function CardBrowserModal({
 
 /* ══ APP ROOT ═══════════════════════════════════════════════════ */
 const INIT_STATS = {
+  newPerDay: NEW_DEF,
+  newToday: 0,
+  newDay: null,
   streak: 0,
   lastDate: null,
   lastStudyDate: null,
@@ -7336,6 +7417,8 @@ function App() {
         ...(s.dailyHistory || {})
       };
       dh[td] = (dh[td] || 0) + 1;
+      /* Cupo de tarjetas nuevas: cuántas se han estrenado hoy */
+      const nuevasHoy = (s.newDay === td ? s.newToday || 0 : 0) + (meta && meta.eraNueva ? 1 : 0);
       /* Primer repaso del día: la racha avanza (o arranca en 1) */
       const ayer = toDate(new Date(Date.now() - 86400000));
       const yaEstudioHoy = s.lastStudyDate === td;
@@ -7361,6 +7444,8 @@ function App() {
         total: (s.total || 0) + 1,
         correct: (s.correct || 0) + (ok ? 1 : 0),
         today: (yaEstudioHoy ? s.today || 0 : 0) + 1,
+        newToday: nuevasHoy,
+        newDay: td,
         streak,
         lastStudyDate: td,
         lastDate: td,
@@ -7753,6 +7838,8 @@ function App() {
       onUpdateDeck: updateDeck,
       onEditCard: editCardById,
       onDropCard: dropCardById,
+      cupo: cupoRestante(stats),
+      limiteNuevas: stats.newPerDay == null ? NEW_DEF : stats.newPerDay,
       addStudied,
       soundOn,
       cfg: fsrsCfg(stats)
@@ -7838,7 +7925,8 @@ function App() {
       setShowQuickAdd(true);
     },
     onBrowse: d => setBrowsingDeck(d),
-    onMix: startMix
+    onMix: startMix,
+    cupo: cupoRestante(stats)
   }), view === 'recall' && !study && /*#__PURE__*/React.createElement(RecallHub, {
     decks: decks,
     onGo: goStudy,
